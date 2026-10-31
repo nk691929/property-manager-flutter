@@ -12,5 +12,6 @@ extension FailureMessage on Failure {
     ValidationFailure() => l10n.errorValidation,
     CacheFailure() => l10n.errorCache,
     UnknownFailure() => l10n.errorUnknown,
+    InvalidCredentialsFailure() => l10n.errorInvalidCredentials,
   };
 }

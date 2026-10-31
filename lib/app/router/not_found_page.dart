@@ -26,8 +26,8 @@ class NotFoundPage extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               FilledButton(
-                onPressed: () => context.go(AppRoutes.home),
-                child: Text(l10n.appInfoTitle),
+                onPressed: () => context.go(AppRoutes.root),
+                child: Text(l10n.actionGoHome),
               ),
             ],
           ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:property_manager/app/theme/design_tokens.dart';
 import 'package:property_manager/core/error/failure.dart';
-import 'package:property_manager/core/presentation/failure_message.dart';
+import 'package:property_manager/core/presentation/widgets/error_view.dart';
 import 'package:property_manager/core/providers/core_providers.dart';
 import 'package:property_manager/features/app_info/domain/entities/app_info.dart';
 import 'package:property_manager/features/app_info/presentation/providers/app_info_providers.dart';
@@ -21,8 +21,8 @@ class AppInfoPage extends ConsumerWidget {
         child: info.when(
           data: (data) => _InfoList(info: data),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _ErrorView(
-            failure: error is Failure ? error : UnknownFailure(cause: error),
+          error: (error, _) => ErrorView(
+            failure: toFailure(error),
             onRetry: () => ref.invalidate(appInfoProvider),
           ),
         ),
@@ -80,36 +80,5 @@ class _InfoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(title: Text(label), trailing: Text(value));
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  const new({required this.failure, required this.onRetry});
-
-  final Failure failure;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(failure.localized(l10n), textAlign: TextAlign.center),
-            const SizedBox(height: AppSpacing.md),
-            FilledButton(onPressed: onRetry, child: Text(l10n.actionRetry)),
-          ],
-        ),
-      ),
-    );
   }
 }

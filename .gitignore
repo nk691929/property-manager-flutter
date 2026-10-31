@@ -46,3 +46,12 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Generated code (CI and developers run build_runner)
+*.g.dart
+*.freezed.dart
+lib/l10n/app_localizations*.dart
+
+# Environment config (keep only the example)
+config/*.json
+!config/example.json

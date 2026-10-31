@@ -1,0 +1,38 @@
+{
+  "@@locale": "en",
+
+  "appInfoTitle": "App information",
+  "@appInfoTitle": { "description": "Title of the app info screen" },
+
+  "labelApp": "App",
+  "labelVersion": "Version",
+  "labelEnvironment": "Environment",
+  "labelBackend": "Backend",
+  "backendConfigured": "Configured",
+  "backendNotConfigured": "Not configured",
+
+  "versionValue": "{version} ({build})",
+  "@versionValue": {
+    "description": "App version with build number",
+    "placeholders": {
+      "version": { "type": "String" },
+      "build": { "type": "String" }
+    }
+  },
+
+  "actionRetry": "Retry",
+
+  "routeNotFoundTitle": "Page not found",
+  "routeNotFoundBody": "We couldn't find \"{location}\".",
+  "@routeNotFoundBody": {
+    "placeholders": { "location": { "type": "String" } }
+  },
+
+  "errorUnknown": "Something went wrong. Please try again.",
+  "errorNetwork": "No connection. Check your internet and try again.",
+  "errorUnauthorized": "Please sign in to continue.",
+  "errorForbidden": "You don't have permission to do that.",
+  "errorNotFound": "We couldn't find what you were looking for.",
+  "errorValidation": "Please check the highlighted fields.",
+  "errorCache": "Couldn't read data stored on this device."
+}

@@ -67,3 +67,14 @@ final class UnknownFailure extends Failure {
   @override
   String get name => 'UnknownFailure';
 }
+
+final class InvalidCredentialsFailure extends Failure {
+  const new({super.cause, super.stackTrace});
+
+  @override
+  String get name => 'InvalidCredentialsFailure';
+}
+
+/// Converts any thrown value into a [Failure] (used at UI boundaries).
+Failure toFailure(Object error) =>
+    error is Failure ? error : UnknownFailure(cause: error);

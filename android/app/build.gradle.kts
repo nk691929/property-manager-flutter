@@ -29,6 +29,29 @@ android {
         versionName = flutter.versionName
     }
 
+    buildFeatures {
+        resValues = true
+    }
+
+     flavorDimensions += "env"
+    productFlavors {
+        create("dev") {
+            dimension = "env"
+            applicationId = "com.nexymark.propertymanager.dev"
+            resValue("string", "app_name", "PM Dev")
+        }
+        create("staging") {
+            dimension = "env"
+            applicationId = "com.nexymark.propertymanager.staging"
+            resValue("string", "app_name", "PM Staging")
+        }
+        create("prod") {
+            dimension = "env"
+            applicationId = "com.nexymark.propertymanager"
+            resValue("string", "app_name", "Property Manager")
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

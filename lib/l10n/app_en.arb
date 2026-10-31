@@ -2,18 +2,14 @@
   "@@locale": "en",
 
   "appInfoTitle": "App information",
-  "@appInfoTitle": { "description": "Title of the app info screen" },
-
   "labelApp": "App",
   "labelVersion": "Version",
   "labelEnvironment": "Environment",
   "labelBackend": "Backend",
   "backendConfigured": "Configured",
   "backendNotConfigured": "Not configured",
-
   "versionValue": "{version} ({build})",
   "@versionValue": {
-    "description": "App version with build number",
     "placeholders": {
       "version": { "type": "String" },
       "build": { "type": "String" }
@@ -21,11 +17,54 @@
   },
 
   "actionRetry": "Retry",
+  "actionSignIn": "Sign in",
+  "actionSignUp": "Create account",
+  "actionSignOut": "Sign out",
+  "actionGoHome": "Go home",
 
   "routeNotFoundTitle": "Page not found",
   "routeNotFoundBody": "We couldn't find \"{location}\".",
   "@routeNotFoundBody": {
     "placeholders": { "location": { "type": "String" } }
+  },
+
+  "loginTitle": "Sign in",
+  "registerTitle": "Create account",
+  "fieldEmail": "Email",
+  "fieldPassword": "Password",
+  "fieldConfirmPassword": "Confirm password",
+  "fieldFullName": "Full name (optional)",
+  "linkNoAccount": "Don't have an account? Create one",
+  "linkHaveAccount": "Already have an account? Sign in",
+  "registerConfirmEmail": "Check your email to confirm your account, then sign in.",
+
+  "fieldEmpty": "This field is required",
+  "fieldInvalidEmail": "Enter a valid email address",
+  "fieldPasswordTooShort": "Use at least {min} characters",
+  "@fieldPasswordTooShort": {
+    "placeholders": { "min": { "type": "int" } }
+  },
+  "fieldPasswordsMismatch": "Passwords don't match",
+  "fieldEmailTaken": "This email is already registered",
+  "fieldWeakPassword": "Choose a stronger password",
+
+  "roleAdmin": "Admin",
+  "roleAgent": "Agent",
+  "roleClient": "Client",
+
+  "homeWelcome": "Welcome, {name}",
+  "@homeWelcome": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "homeManageUsers": "Manage users",
+
+  "adminUsersTitle": "Users",
+  "adminUsersEmpty": "No users found.",
+  "adminUsersChangeRole": "Change role",
+  "adminUsersRoleUpdated": "Role updated",
+  "adminUsersSelf": "{name} (you)",
+  "@adminUsersSelf": {
+    "placeholders": { "name": { "type": "String" } }
   },
 
   "errorUnknown": "Something went wrong. Please try again.",
@@ -34,5 +73,6 @@
   "errorForbidden": "You don't have permission to do that.",
   "errorNotFound": "We couldn't find what you were looking for.",
   "errorValidation": "Please check the highlighted fields.",
-  "errorCache": "Couldn't read data stored on this device."
+  "errorCache": "Couldn't read data stored on this device.",
+  "errorInvalidCredentials": "Incorrect email or password."
 }

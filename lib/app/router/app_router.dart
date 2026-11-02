@@ -13,6 +13,13 @@ import 'package:property_manager/features/auth/presentation/providers/auth_provi
 import 'package:property_manager/features/home/presentation/pages/admin_home_page.dart';
 import 'package:property_manager/features/home/presentation/pages/agent_home_page.dart';
 import 'package:property_manager/features/home/presentation/pages/client_home_page.dart';
+import 'package:property_manager/features/platform_settings/presentation/pages/platform_settings_page.dart';
+import 'package:property_manager/features/properties/domain/entities/property_enums.dart';
+import 'package:property_manager/features/properties/presentation/pages/managed_listings_page.dart';
+import 'package:property_manager/features/properties/presentation/pages/property_browse_page.dart';
+import 'package:property_manager/features/properties/presentation/pages/property_detail_page.dart';
+import 'package:property_manager/features/properties/presentation/pages/property_form_page.dart';
+import 'package:property_manager/features/properties/presentation/providers/property_list_query.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_router.g.dart';
@@ -61,6 +68,17 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => const AppInfoPage(),
       ),
       GoRoute(
+        path: AppRoutes.properties,
+        builder: (context, state) => const PropertyBrowsePage(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (context, state) =>
+                PropertyDetailPage(propertyId: state.pathParameters['id']!),
+          ),
+        ],
+      ),
+      GoRoute(
         path: AppRoutes.admin,
         builder: (context, state) => const AdminHomePage(),
         routes: [
@@ -68,11 +86,45 @@ GoRouter appRouter(Ref ref) {
             path: 'users',
             builder: (context, state) => const AdminUsersPage(),
           ),
+          GoRoute(
+            path: 'listings',
+            builder: (context, state) =>
+                const ManagedListingsPage(scope: PropertyScope.all),
+          ),
+          GoRoute(
+            path: 'review',
+            builder: (context, state) => const ManagedListingsPage(
+              scope: PropertyScope.all,
+              initialStatus: PropertyStatus.pendingReview,
+            ),
+          ),
+          GoRoute(
+            path: 'settings',
+            builder: (context, state) => const PlatformSettingsPage(),
+          ),
         ],
       ),
       GoRoute(
         path: AppRoutes.agent,
         builder: (context, state) => const AgentHomePage(),
+        routes: [
+          GoRoute(
+            path: 'listings',
+            builder: (context, state) =>
+                const ManagedListingsPage(scope: PropertyScope.mine),
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (context, state) => const PropertyFormPage(),
+              ),
+              GoRoute(
+                path: ':id/edit',
+                builder: (context, state) =>
+                    PropertyFormPage(propertyId: state.pathParameters['id']),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.client,

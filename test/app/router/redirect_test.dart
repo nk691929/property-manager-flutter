@@ -96,5 +96,36 @@ void main() {
         isNull,
       );
     });
+
+    test('property routes follow permissions', () {
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.properties),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.client), location: '/properties/p-1'),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.agentListingNew),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.agentListings),
+        AppRoutes.client,
+      );
+      expect(
+        redirect(user: user(Role.admin), location: AppRoutes.agentListings),
+        AppRoutes.admin,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.adminSettings),
+        AppRoutes.agent,
+      );
+      expect(
+        redirect(user: user(Role.admin), location: AppRoutes.adminSettings),
+        isNull,
+      );
+    });
   });
 }

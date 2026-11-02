@@ -1,6 +1,7 @@
 import 'package:property_manager/core/backend/supabase_failure_mapper.dart';
 import 'package:property_manager/core/error/failure.dart';
 import 'package:property_manager/features/properties/data/datasources/properties_data_source.dart';
+import 'package:property_manager/features/properties/data/photo_storage.dart';
 import 'package:property_manager/features/properties/data/property_json.dart';
 import 'package:property_manager/features/properties/domain/entities/property.dart';
 import 'package:property_manager/features/properties/domain/entities/property_draft.dart';
@@ -15,6 +16,12 @@ final class SupabasePropertiesDataSource implements PropertiesDataSource {
 
   static const _table = 'properties';
 
+  String _photoUrl(String path) =>
+      _client.storage.from(propertyPhotosBucket).getPublicUrl(path);
+
+  Property _parse(Map<String, dynamic> row) =>
+      propertyFromJson(row, photoUrl: _photoUrl);
+
   /// User text goes into a PostgREST filter string, so strip the characters
   /// that carry meaning there (commas, parentheses, wildcards, quotes).
   static String _clean(String raw) =>
@@ -28,7 +35,7 @@ final class SupabasePropertiesDataSource implements PropertiesDataSource {
   }) => supabaseGuard(() async {
     var query = _client
         .from(_table)
-        .select()
+        .select(propertySelect)
         .eq('status', PropertyStatus.published.wireName);
 
     final text = _clean(filter.query);
@@ -58,7 +65,7 @@ final class SupabasePropertiesDataSource implements PropertiesDataSource {
     final rows = await ordered
         .order('id', ascending: true)
         .range(offset, offset + limit - 1);
-    return rows.map(propertyFromJson).toList();
+    return rows.map(_parse).toList();
   });
 
   @override
@@ -68,13 +75,16 @@ final class SupabasePropertiesDataSource implements PropertiesDataSource {
     required int limit,
     PropertyStatus? status,
   }) => supabaseGuard(() async {
-    var query = _client.from(_table).select().eq('agent_id', agentId);
+    var query = _client
+        .from(_table)
+        .select(propertySelect)
+        .eq('agent_id', agentId);
     if (status case final s?) query = query.eq('status', s.wireName);
     final rows = await query
         .order('updated_at', ascending: false)
         .order('id', ascending: true)
         .range(offset, offset + limit - 1);
-    return rows.map(propertyFromJson).toList();
+    return rows.map(_parse).toList();
   });
 
   @override
@@ -83,19 +93,23 @@ final class SupabasePropertiesDataSource implements PropertiesDataSource {
     required int limit,
     PropertyStatus? status,
   }) => supabaseGuard(() async {
-    var query = _client.from(_table).select();
+    var query = _client.from(_table).select(propertySelect);
     if (status case final s?) query = query.eq('status', s.wireName);
     final rows = await query
         .order('updated_at', ascending: false)
         .order('id', ascending: true)
         .range(offset, offset + limit - 1);
-    return rows.map(propertyFromJson).toList();
+    return rows.map(_parse).toList();
   });
 
   @override
   Future<Property> getById(String id) => supabaseGuard(() async {
-    final row = await _client.from(_table).select().eq('id', id).single();
-    return propertyFromJson(row);
+    final row = await _client
+        .from(_table)
+        .select(propertySelect)
+        .eq('id', id)
+        .single();
+    return _parse(row);
   });
 
   @override
@@ -104,9 +118,9 @@ final class SupabasePropertiesDataSource implements PropertiesDataSource {
         final row = await _client
             .from(_table)
             .insert({...draftToJson(draft), 'agent_id': agentId})
-            .select()
+            .select(propertySelect)
             .single();
-        return propertyFromJson(row);
+        return _parse(row);
       });
 
   @override
@@ -116,9 +130,9 @@ final class SupabasePropertiesDataSource implements PropertiesDataSource {
             .from(_table)
             .update(draftToJson(draft))
             .eq('id', id)
-            .select()
+            .select(propertySelect)
             .single();
-        return propertyFromJson(row);
+        return _parse(row);
       });
 
   @override
@@ -135,9 +149,9 @@ final class SupabasePropertiesDataSource implements PropertiesDataSource {
             'rejection_reason': rejectionReason,
         })
         .eq('id', id)
-        .select()
+        .select(propertySelect)
         .single();
-    return propertyFromJson(row);
+    return _parse(row);
   });
 
   @override
@@ -147,9 +161,9 @@ final class SupabasePropertiesDataSource implements PropertiesDataSource {
             .from(_table)
             .update({'agent_id': agentId})
             .eq('id', id)
-            .select()
+            .select(propertySelect)
             .single();
-        return propertyFromJson(row);
+        return _parse(row);
       });
 
   @override

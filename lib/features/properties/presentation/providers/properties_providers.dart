@@ -4,9 +4,15 @@ import 'package:property_manager/features/auth/presentation/providers/auth_provi
 import 'package:property_manager/features/platform_settings/presentation/providers/platform_settings_providers.dart';
 import 'package:property_manager/features/properties/data/datasources/fake_properties_data_source.dart';
 import 'package:property_manager/features/properties/data/datasources/properties_data_source.dart';
+import 'package:property_manager/features/properties/data/datasources/property_photos_data_source.dart';
 import 'package:property_manager/features/properties/data/datasources/supabase_properties_data_source.dart';
+import 'package:property_manager/features/properties/data/datasources/supabase_property_photos_data_source.dart';
+import 'package:property_manager/features/properties/data/datasources/unsupported_property_photos_data_source.dart';
 import 'package:property_manager/features/properties/data/repositories/properties_repository_impl.dart';
+import 'package:property_manager/features/properties/data/repositories/property_photos_repository_impl.dart';
 import 'package:property_manager/features/properties/domain/repositories/properties_repository.dart';
+import 'package:property_manager/features/properties/domain/repositories/property_photos_repository.dart';
+import 'package:property_manager/features/properties/domain/usecases/add_property_photo.dart';
 import 'package:property_manager/features/properties/domain/usecases/change_property_status.dart';
 import 'package:property_manager/features/properties/domain/usecases/create_property.dart';
 import 'package:property_manager/features/properties/domain/usecases/delete_property.dart';
@@ -14,7 +20,9 @@ import 'package:property_manager/features/properties/domain/usecases/get_propert
 import 'package:property_manager/features/properties/domain/usecases/list_all_properties.dart';
 import 'package:property_manager/features/properties/domain/usecases/list_my_properties.dart';
 import 'package:property_manager/features/properties/domain/usecases/reassign_property.dart';
+import 'package:property_manager/features/properties/domain/usecases/remove_property_photo.dart';
 import 'package:property_manager/features/properties/domain/usecases/search_properties.dart';
+import 'package:property_manager/features/properties/domain/usecases/set_cover_photo.dart';
 import 'package:property_manager/features/properties/domain/usecases/update_property.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -77,9 +85,50 @@ ChangePropertyStatus changePropertyStatus(Ref ref) => ChangePropertyStatus(
   () => ref.read(currentUserProvider),
 );
 
+@Riverpod(keepAlive: true)
+PropertyPhotosDataSource propertyPhotosDataSource(Ref ref) {
+  final config = ref.watch(appConfigProvider);
+  return config.hasBackendConfig
+      ? SupabasePropertyPhotosDataSource(
+          ref.watch(supabaseClientProvider),
+          ref.watch(appLoggerProvider),
+        )
+      : const UnsupportedPropertyPhotosDataSource();
+}
+
+@Riverpod(keepAlive: true)
+PropertyPhotosRepository propertyPhotosRepository(Ref ref) =>
+    PropertyPhotosRepositoryImpl(ref.watch(propertyPhotosDataSourceProvider));
+
+/// Photos need real storage; the in-memory fake backend has none.
+@riverpod
+bool photosSupported(Ref ref) => ref.watch(appConfigProvider).hasBackendConfig;
+
+@riverpod
+AddPropertyPhoto addPropertyPhoto(Ref ref) => AddPropertyPhoto(
+  ref.watch(propertiesRepositoryProvider),
+  ref.watch(propertyPhotosRepositoryProvider),
+  () => ref.read(currentUserProvider),
+);
+
+@riverpod
+RemovePropertyPhoto removePropertyPhoto(Ref ref) => RemovePropertyPhoto(
+  ref.watch(propertiesRepositoryProvider),
+  ref.watch(propertyPhotosRepositoryProvider),
+  () => ref.read(currentUserProvider),
+);
+
+@riverpod
+SetCoverPhoto setCoverPhoto(Ref ref) => SetCoverPhoto(
+  ref.watch(propertiesRepositoryProvider),
+  ref.watch(propertyPhotosRepositoryProvider),
+  () => ref.read(currentUserProvider),
+);
+
 @riverpod
 DeleteProperty deleteProperty(Ref ref) => DeleteProperty(
   ref.watch(propertiesRepositoryProvider),
+  ref.watch(propertyPhotosRepositoryProvider),
   () => ref.read(currentUserProvider),
 );
 

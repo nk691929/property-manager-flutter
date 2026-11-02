@@ -144,14 +144,64 @@ void main() {
 
   group('DeleteProperty', () {
     test('drafts can be deleted by their owner', () async {
-      final result = await DeleteProperty(repo, () => agentUser)('p-7');
+      final result = await DeleteProperty(
+        repo,
+        FakePhotosRepository(),
+        () => agentUser,
+      )('p-7');
       expect(result.isOk, isTrue);
     });
 
     test('non-drafts cannot be deleted', () async {
-      final result = await DeleteProperty(repo, () => agentUser)('p-1');
+      final result = await DeleteProperty(
+        repo,
+        FakePhotosRepository(),
+        () => agentUser,
+      )('p-1');
       expect(result.failureOrNull, isA<ForbiddenFailure>());
       expect(repo.calls, isNot(contains('delete')));
+    });
+
+    test('photos are removed first, then the draft', () async {
+      final photosRepo = FakePhotosRepository();
+      final withPhotos = RecordingPropertiesRepository(
+        PropertiesRepositoryImpl(
+          FakePropertiesDataSource(
+            properties: [
+              sampleProperty(
+                photos: [samplePhoto('a', 0), samplePhoto('b', 1)],
+              ),
+            ],
+          ),
+        ),
+      );
+      final result = await DeleteProperty(
+        withPhotos,
+        photosRepo,
+        () => agentUser,
+      )('p-x');
+      expect(result.isOk, isTrue);
+      expect(photosRepo.calls, ['remove:a', 'remove:b']);
+      expect(withPhotos.calls, contains('delete'));
+    });
+
+    test('a failed photo removal stops the delete', () async {
+      final withPhotos = RecordingPropertiesRepository(
+        PropertiesRepositoryImpl(
+          FakePropertiesDataSource(
+            properties: [
+              sampleProperty(photos: [samplePhoto('a', 0)]),
+            ],
+          ),
+        ),
+      );
+      final result = await DeleteProperty(
+        withPhotos,
+        FakePhotosRepository(failRemove: true),
+        () => agentUser,
+      )('p-x');
+      expect(result.failureOrNull, isA<NetworkFailure>());
+      expect(withPhotos.calls, isNot(contains('delete')));
     });
   });
 }

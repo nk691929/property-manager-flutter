@@ -3,4 +3,8 @@ enum Permission {
   accessAgentArea,
   accessClientArea,
   manageUsers,
+  browseProperties,
+  manageOwnProperties,
+  manageAllProperties,
+  manageSettings,
 }

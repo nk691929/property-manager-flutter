@@ -1,0 +1,1 @@
+const propertyPageSize = 20;

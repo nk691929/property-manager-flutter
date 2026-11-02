@@ -168,3 +168,43 @@ bug, because `null` was the last event anyway.
 A tag marks a release commit. Tagging before the merge pointed `v0.1.0-mvp1` at
 MVP 0 code. Never move a tag after it's pushed; delete it only if nobody has
 consumed it.
+
+## State machines, search and paging
+
+**[Medium] How did you model the listing lifecycle?**
+As a state machine: a status enum plus one pure function `canTransition`. The UI
+derives its buttons from `nextStatuses`, so screens never hold their own rules.
+
+**[Hard] Why enforce the same transitions in Dart and in a Postgres trigger?**
+Dart gives instant feedback and clean failures; only the database stops a client
+that calls the API directly. The cost is duplicated rules, mitigated by tests on
+both sides.
+
+**[Medium] How do admins change platform rules without a release?**
+A single-row `app_settings` table with an admin-only update policy. Use cases
+read it before enforcing, so a stale UI copy can't bypass the rule.
+
+**[Medium] Offset vs keyset pagination?**
+Offset is simple but can repeat or skip rows when data changes mid-scroll;
+keyset (cursor) is stable but needs a sortable cursor and more code. We use offset
+with an `id` tie-breaker and de-duplicate on the client.
+
+**[Medium] Why debounce search input?**
+Without it each keystroke fires a query. A 400 ms debounce sends one request when
+typing pauses and cancels the pending timer on each change and on dispose.
+
+**[Hard] Why does the filter object need value equality?**
+Riverpod caches family providers by argument equality. A freezed `PropertyFilter`
+inside `PropertyListQuery` means identical filters share one cached list and
+different filters get their own.
+
+**[Medium] Why is the mutation notifier `keepAlive`?**
+A page often pops right after a save. An auto-dispose notifier could be disposed
+mid-await, making `ref.invalidate` throw.
+
+**[Medium] How do you keep user text out of a PostgREST filter string?**
+Strip characters with meaning there (commas, parentheses, wildcards, quotes)
+before interpolating it into `or(...)` or `ilike`.
+
+**[Easy] Why `numeric` for prices in the database?**
+Floating-point can't represent many decimal amounts exactly; `numeric` is exact.

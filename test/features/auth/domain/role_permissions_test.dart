@@ -40,4 +40,19 @@ void main() {
     expect(named.displayName, 'Ada');
     expect(unnamed.displayName, 'b@x.com');
   });
+  test('agents manage their own listings, admins manage all', () {
+    const agent = AppUser(id: 'a', email: 'a@x.com', role: Role.agent);
+    const admin = AppUser(id: 'b', email: 'b@x.com', role: Role.admin);
+    const client = AppUser(id: 'c', email: 'c@x.com', role: Role.client);
+
+    expect(agent.can(Permission.manageOwnProperties), isTrue);
+    expect(agent.can(Permission.manageAllProperties), isFalse);
+    expect(admin.can(Permission.manageAllProperties), isTrue);
+    expect(admin.can(Permission.manageSettings), isTrue);
+    expect(agent.can(Permission.manageSettings), isFalse);
+    for (final user in [agent, admin, client]) {
+      expect(user.can(Permission.browseProperties), isTrue);
+    }
+    expect(client.can(Permission.manageOwnProperties), isFalse);
+  });
 }

@@ -91,3 +91,25 @@ The Supabase session is persisted through `SecureLocalStorage`
 ### ADR-012: No-backend fallback
 Without SUPABASE_* config, dev/staging use a seeded in-memory fake; prod throws
 at startup. Dev data is not persisted.
+
+### ADR-013: Workflow rules live twice, on purpose
+Listing status transitions are a pure Dart function (`PropertyWorkflow`) for UX
+and early failure, and a Postgres trigger (`guard_property_write`) for real
+enforcement. They must be kept in sync; tests pin the Dart side and the SQL
+checks in docs/MVP-02.md pin the database side.
+
+### ADR-014: Admin-configurable platform rules
+`app_settings` is a single-row table (boolean primary key = true). Admins change
+`require_listing_approval` at runtime. Use cases always re-read the rule before
+enforcing it; the cached copy in the UI only labels buttons.
+
+### ADR-015: Paged lists as a family notifier
+`PropertyList(PropertyListQuery)` serves browse, "my listings" and admin lists.
+The query is a freezed value, so Riverpod caches one list per distinct query.
+Offset pagination with an `id` tie-breaker; "Load more" is an explicit button.
+
+### ADR-016: Cross-feature dependencies
+`properties` domain imports `platform_settings` domain (approval rule); the
+properties UI imports `adminUsersProvider` to list agents for reassignment.
+Dependencies point at domain interfaces or public providers, never at another
+feature's data layer.

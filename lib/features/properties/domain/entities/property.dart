@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:property_manager/features/properties/domain/entities/property_enums.dart';
+import 'package:property_manager/features/properties/domain/entities/property_photo.dart';
 
 part 'property.freezed.dart';
 
@@ -25,8 +26,12 @@ abstract class Property with _$Property {
     AreaUnit? areaUnit,
     String? rejectionReason,
     DateTime? publishedAt,
+    @Default(<PropertyPhoto>[]) List<PropertyPhoto> photos,
   }) = _Property;
   const new _();
 
   bool get isRent => listingType == ListingType.rent;
+
+  /// Photos are sorted by position, so the first one is the cover.
+  PropertyPhoto? get coverPhoto => photos.firstOrNull;
 }

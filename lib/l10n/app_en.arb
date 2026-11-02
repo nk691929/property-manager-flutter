@@ -201,5 +201,32 @@
   "settingsTitle": "Platform settings",
   "settingsApprovalTitle": "Require approval for new listings",
   "settingsApprovalBody": "When on, agents submit listings for admin review before they go live. Listings already pending stay pending until reviewed.",
-  "settingsSaved": "Setting saved"
+  "settingsSaved": "Setting saved",
+    "photosTitle": "Photos",
+  "photosCount": "{count} of {max}",
+  "@photosCount": {
+    "placeholders": { "count": { "type": "int" }, "max": { "type": "int" } }
+  },
+  "photosAdd": "Add photo",
+  "photosFromCamera": "Take a photo",
+  "photosFromGallery": "Choose from gallery",
+  "photosEmpty": "No photos yet. Listings with photos get more attention.",
+  "photosUnavailable": "Photo upload needs a connected backend and isn't available in offline demo mode.",
+  "photoCover": "Cover",
+  "photoSetCover": "Set as cover",
+  "photoRemove": "Remove",
+  "photoAdded": "Photo added",
+  "photoRemoved": "Photo removed",
+  "photoCoverSet": "Cover updated",
+  "photoErrorEmpty": "That file is empty.",
+  "photoErrorTooLarge": "Photo is too large (max {mb} MB).",
+  "@photoErrorTooLarge": { "placeholders": { "mb": { "type": "int" } } },
+  "photoErrorUnsupported": "Use a JPEG, PNG or WebP image.",
+  "photoErrorTooMany": "A listing can have up to {max} photos.",
+  "@photoErrorTooMany": { "placeholders": { "max": { "type": "int" } } },
+  "galleryCounter": "{current} / {total}",
+  "@galleryCounter": {
+    "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "listingSavedAddPhotos": "Listing saved. You can add photos now."
 }

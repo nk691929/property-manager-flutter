@@ -8,6 +8,7 @@ import 'package:property_manager/features/properties/domain/entities/property_en
 import 'package:property_manager/features/properties/presentation/extensions/property_format.dart';
 import 'package:property_manager/features/properties/presentation/extensions/property_labels.dart';
 import 'package:property_manager/features/properties/presentation/providers/property_list_providers.dart';
+import 'package:property_manager/features/properties/presentation/widgets/property_gallery.dart';
 import 'package:property_manager/features/properties/presentation/widgets/property_status_chip.dart';
 import 'package:property_manager/l10n/l10n.dart';
 
@@ -56,6 +57,8 @@ class _Detail extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
+        PropertyGallery(photos: property.photos, semanticLabel: property.title),
+        const SizedBox(height: AppSpacing.md),
         Text(
           formatPrice(context, property),
           style: theme.textTheme.headlineSmall,

@@ -1,5 +1,6 @@
 import 'package:property_manager/core/error/failure.dart';
 import 'package:property_manager/core/result/result.dart';
+import 'package:property_manager/features/properties/domain/entities/photo_upload.dart';
 import 'package:property_manager/features/properties/domain/entities/property.dart';
 import 'package:property_manager/features/properties/domain/entities/property_draft.dart';
 import 'package:property_manager/features/properties/domain/entities/property_enums.dart';
@@ -101,13 +102,20 @@ class BrowseFilter extends _$BrowseFilter {
 
 /// Mutations. keepAlive so the notifier outlives the page that called it
 /// (a page often pops right after a successful save).
+/// Mutations. keepAlive so the notifier outlives the page that called it
+/// (a page often pops right after a successful save).
 @Riverpod(keepAlive: true)
 class PropertyActions extends _$PropertyActions {
   @override
   void build() {}
 
-  Future<Failure?> create(PropertyDraft draft) =>
-      _run(() => ref.read(createPropertyProvider)(draft));
+  /// Returns the new property so the form can continue on its edit screen
+  /// (photos need the listing's id).
+  Future<Result<Property>> create(PropertyDraft draft) async {
+    final result = await ref.read(createPropertyProvider)(draft);
+    if (ref.mounted && result.isOk) _refreshData();
+    return result;
+  }
 
   Future<Failure?> update(String id, PropertyDraft draft) =>
       _run(() => ref.read(updatePropertyProvider)(id, draft));
@@ -131,15 +139,28 @@ class PropertyActions extends _$PropertyActions {
     () => ref.read(reassignPropertyProvider)(propertyId: id, agentId: agentId),
   );
 
+  Future<Failure?> addPhoto(String propertyId, PhotoUpload upload) =>
+      _run(() => ref.read(addPropertyPhotoProvider)(propertyId, upload));
+
+  Future<Failure?> removePhoto(String propertyId, String photoId) =>
+      _run(() => ref.read(removePropertyPhotoProvider)(propertyId, photoId));
+
+  Future<Failure?> setCover(String propertyId, String photoId) =>
+      _run(() => ref.read(setCoverPhotoProvider)(propertyId, photoId));
+
+  void _refreshData() {
+    ref
+      ..invalidate(propertyListProvider)
+      ..invalidate(propertyDetailProvider);
+  }
+
   /// Returns null on success, or the failure to show.
   Future<Failure?> _run<T>(Future<Result<T>> Function() action) async {
     final result = await action();
     if (!ref.mounted) return null;
     return result.fold<Failure?>(
       onOk: (_) {
-        ref
-          ..invalidate(propertyListProvider)
-          ..invalidate(propertyDetailProvider);
+        _refreshData();
         return null;
       },
       onErr: (failure) => failure,

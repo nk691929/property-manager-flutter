@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:property_manager/app/router/routes.dart';
 import 'package:property_manager/app/theme/design_tokens.dart';
 import 'package:property_manager/core/error/failure.dart';
 import 'package:property_manager/core/presentation/failure_message.dart';
@@ -13,7 +14,9 @@ import 'package:property_manager/features/properties/domain/entities/property_dr
 import 'package:property_manager/features/properties/domain/entities/property_enums.dart';
 import 'package:property_manager/features/properties/domain/rules/property_validators.dart';
 import 'package:property_manager/features/properties/presentation/extensions/property_labels.dart';
+import 'package:property_manager/features/properties/presentation/providers/properties_providers.dart';
 import 'package:property_manager/features/properties/presentation/providers/property_list_providers.dart';
+import 'package:property_manager/features/properties/presentation/widgets/property_photo_manager.dart';
 import 'package:property_manager/l10n/l10n.dart';
 
 /// Create when [propertyId] is null, edit otherwise.
@@ -152,21 +155,47 @@ class _PropertyFormState extends ConsumerState<_PropertyForm> {
 
     final actions = ref.read(propertyActionsProvider.notifier);
     final id = widget.initial?.id;
-    final failure = id == null
-        ? await actions.create(draft)
-        : await actions.update(id, draft);
+
+    if (id != null) {
+      final failure = await actions.update(id, draft);
+      if (!mounted) return;
+      if (failure != null) {
+        setState(() {
+          _saving = false;
+          _error = failure;
+        });
+        return;
+      }
+      final messenger = ScaffoldMessenger.of(context);
+      final message = context.l10n.listingSaved;
+      context.pop();
+      messenger.showSnackBar(SnackBar(content: Text(message)));
+      return;
+    }
+
+    final result = await actions.create(draft);
     if (!mounted) return;
-    if (failure != null) {
+    final created = result.valueOrNull;
+    if (created == null) {
       setState(() {
         _saving = false;
-        _error = failure;
+        _error = result.failureOrNull;
       });
       return;
     }
+
+    final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
-    final message = context.l10n.listingSaved;
-    context.pop();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    if (ref.read(photosSupportedProvider)) {
+      // Photos need the listing's id, so continue on its edit screen.
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.listingSavedAddPhotos)),
+      );
+      context.pushReplacement(AppRoutes.agentListingEdit(created.id));
+    } else {
+      context.pop();
+      messenger.showSnackBar(SnackBar(content: Text(l10n.listingSaved)));
+    }
   }
 
   @override
@@ -290,6 +319,15 @@ class _PropertyFormState extends ConsumerState<_PropertyForm> {
             decoration: InputDecoration(labelText: l10n.fieldAddress),
             validator: (v) => PropertyValidators.address(v)?.localized(l10n),
           ),
+          TextFormField(
+            controller: _address,
+            decoration: InputDecoration(labelText: l10n.fieldAddress),
+            validator: (v) => PropertyValidators.address(v)?.localized(l10n),
+          ),
+          if (widget.initial case final property?) ...[
+            const SizedBox(height: AppSpacing.lg),
+            PropertyPhotoManager(propertyId: property.id),
+          ],
           if (_error case final failure?)
             AuthErrorText(failure.localized(l10n)),
           const SizedBox(height: AppSpacing.lg),

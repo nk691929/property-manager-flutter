@@ -1,6 +1,12 @@
 # Changelog
 Format: Keep a Changelog. Versioning: SemVer; pre-1.0 tags are `v0.<n>.x-mvp<n>`.
 
+## [0.2.1-mvp2.1] - 2026-11-02
+### Added
+- Property photos: upload, cover, remove, gallery, card thumbnails
+- Supabase migration 0003 (property_photos, storage bucket and policies)
+- Photo rules and use cases; `DeleteProperty` removes a draft's files
+
 ## [0.2.0-mvp2] - 2026-11-01
 ### Added
 - Property listings with approval workflow, browse/search/filter/sort/paging

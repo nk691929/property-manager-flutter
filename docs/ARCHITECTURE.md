@@ -113,3 +113,28 @@ Offset pagination with an `id` tie-breaker; "Load more" is an explicit button.
 properties UI imports `adminUsersProvider` to list agents for reassignment.
 Dependencies point at domain interfaces or public providers, never at another
 feature's data layer.
+
+### ADR-017: Photos are part of the Property aggregate
+`Property` carries its `photos`; the properties feature owns photo use cases.
+A separate feature would need properties and photos to import each other (a
+cycle). One query embeds photos with the property (PostgREST resource
+embedding), so lists need no per-card requests.
+
+### ADR-018: Public bucket with unguessable paths
+`property-photos` is public-read: URLs are plain strings, cacheable, and need no
+signing request. Paths are `<propertyId>/<random uuid>.<ext>`. Write access is
+RLS-protected through `can_manage_property_photos`. Trade-off: anyone holding a
+URL can fetch the file, including photos of draft listings. A private bucket
+with signed URLs is the stricter alternative (revisit in MVP 6).
+
+### ADR-019: Compensating actions across Storage and Postgres
+No transaction spans both systems. Add = upload file, then insert row (delete the
+file if the row fails). Remove = delete row, then file (log if the file delete
+fails). A failure always leaves an invisible orphan file, never a row pointing at
+a missing image. Deleting a draft removes its photos first, because after the
+property row is gone the storage policies can no longer prove ownership.
+
+### ADR-020: Validate on the device, enforce on the server
+The picker shrinks images (max 1600 px, quality 80). Domain rules check count,
+size and type (type from magic bytes, not file names). The bucket limits, the
+10-photo trigger and RLS are the real enforcement.

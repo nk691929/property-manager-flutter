@@ -1,13 +1,19 @@
+import 'dart:typed_data';
+
+import 'package:property_manager/core/error/failure.dart';
 import 'package:property_manager/core/result/result.dart';
 import 'package:property_manager/features/auth/domain/entities/app_user.dart';
 import 'package:property_manager/features/auth/domain/entities/role.dart';
 import 'package:property_manager/features/platform_settings/domain/entities/platform_settings.dart';
 import 'package:property_manager/features/platform_settings/domain/repositories/platform_settings_repository.dart';
+import 'package:property_manager/features/properties/domain/entities/photo_upload.dart';
 import 'package:property_manager/features/properties/domain/entities/property.dart';
 import 'package:property_manager/features/properties/domain/entities/property_draft.dart';
 import 'package:property_manager/features/properties/domain/entities/property_enums.dart';
 import 'package:property_manager/features/properties/domain/entities/property_filter.dart';
+import 'package:property_manager/features/properties/domain/entities/property_photo.dart';
 import 'package:property_manager/features/properties/domain/repositories/properties_repository.dart';
+import 'package:property_manager/features/properties/domain/repositories/property_photos_repository.dart';
 
 // Matches the fake seed: p-7 (draft), p-8 (pending) belong to 'u-agent'.
 const agentUser = AppUser(id: 'u-agent', email: 'a@x.com', role: Role.agent);
@@ -126,5 +132,85 @@ final class FakeSettingsRepository implements PlatformSettingsRepository {
   }) async {
     requireApproval = value;
     return await get();
+  }
+}
+
+Property sampleProperty({
+  String id = 'p-x',
+  String agentId = 'u-agent',
+  PropertyStatus status = PropertyStatus.draft,
+  List<PropertyPhoto> photos = const [],
+}) => Property(
+  id: id,
+  agentId: agentId,
+  title: 'Sample property',
+  description: '',
+  listingType: ListingType.rent,
+  propertyType: PropertyType.house,
+  price: 50000,
+  currency: 'PKR',
+  city: 'Faisalabad',
+  address: '',
+  status: status,
+  createdAt: DateTime.utc(2026),
+  updatedAt: DateTime.utc(2026),
+  photos: photos,
+);
+
+PropertyPhoto samplePhoto(String id, int position) => PropertyPhoto(
+  id: id,
+  path: 'p-x/$id.jpg',
+  url: 'https://example.com/$id.jpg',
+  position: position,
+);
+
+PhotoUpload jpegUpload([int size = 100]) =>
+    PhotoUpload(bytes: Uint8List(size), extension: 'jpg');
+
+/// Records calls so tests can assert what reached the photos repository.
+final class FakePhotosRepository implements PropertyPhotosRepository {
+  new({this.failRemove = false});
+
+  final bool failRemove;
+  final List<String> calls = [];
+
+  @override
+  Future<Result<PropertyPhoto>> add(
+    String propertyId,
+    PhotoUpload upload, {
+    required int position,
+  }) async {
+    calls.add('add:$position');
+    return Ok(
+      PropertyPhoto(
+        id: 'ph-new',
+        path: '$propertyId/new.jpg',
+        url: '',
+        position: position,
+      ),
+    );
+  }
+
+  @override
+  Future<Result<void>> remove(PropertyPhoto photo) async {
+    calls.add('remove:${photo.id}');
+    if (failRemove) return const Err(NetworkFailure());
+    return const Ok(null);
+  }
+
+  @override
+  Future<Result<PropertyPhoto>> setPosition(
+    String photoId,
+    int position,
+  ) async {
+    calls.add('setPosition:$position');
+    return Ok(
+      PropertyPhoto(
+        id: photoId,
+        path: 'x/$photoId.jpg',
+        url: '',
+        position: position,
+      ),
+    );
   }
 }

@@ -208,3 +208,39 @@ before interpolating it into `or(...)` or `ilike`.
 
 **[Easy] Why `numeric` for prices in the database?**
 Floating-point can't represent many decimal amounts exactly; `numeric` is exact.
+
+## Files, storage and images
+
+**[Medium] How do you keep a file store and a database consistent?**
+There is no shared transaction, so use compensating actions and choose the
+failure order carefully: upload then insert (delete the file if the insert
+fails); delete the row then the file. A failure then leaves an invisible orphan
+file, never a row pointing at nothing.
+
+**[Hard] How do you authorize file uploads when storage doesn't know your domain?**
+Storage policies see only the bucket and path. Encode the owner in the path
+(`<propertyId>/<file>`) and have the policy call one SQL function that maps the
+path to a property and checks the rule. The same function backs the table
+policies, so the rule exists once.
+
+**[Medium] Public bucket or signed URLs?**
+Public: simple, cacheable, no per-image request, but anyone with the URL can
+read it. Signed URLs expire and are private, but cost an extra request and
+complicate caching. Choose by how sensitive the images are.
+
+**[Medium] How do you avoid N+1 queries for lists with children?**
+Resource embedding: `select('*, property_photos(...)')` returns each property
+with its photos in one request.
+
+**[Medium] Why detect the image type from bytes?**
+File names and reported content types can be missing or wrong; the first bytes
+(magic numbers) identify JPEG, PNG and WebP reliably.
+
+**[Medium] How do you keep list images from exhausting memory?**
+Shrink at pick time (max size and quality), decode thumbnails at a smaller width
+(`memCacheWidth`), and cache by a stable key.
+
+**[Hard] Why delete a draft's files before the draft row?**
+Once the row is gone, the storage policy can't look up the owner and refuses the
+deletes. Removing photos first (row, then file) and then the property keeps every
+step authorized.

@@ -115,6 +115,12 @@ final class RecordingPropertiesRepository implements PropertiesRepository {
     calls.add('delete');
     return _inner.delete(id);
   }
+
+  @override
+  Future<Result<List<Property>>> listByIds(List<String> ids) {
+    calls.add('listByIds');
+    return _inner.listByIds(ids);
+  }
 }
 
 final class FakeSettingsRepository implements PlatformSettingsRepository {

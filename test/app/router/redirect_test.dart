@@ -127,5 +127,20 @@ void main() {
         isNull,
       );
     });
+
+    test('saved properties are for clients only', () {
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.saved),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.saved),
+        AppRoutes.agent,
+      );
+      expect(
+        redirect(user: user(Role.admin), location: AppRoutes.saved),
+        AppRoutes.admin,
+      );
+    });
   });
 }

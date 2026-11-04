@@ -55,4 +55,27 @@ void main() {
     }
     expect(client.can(Permission.manageOwnProperties), isFalse);
   });
+
+  test('engagement permissions follow the roles', () {
+    const agent = AppUser(id: 'a', email: 'a@x.com', role: Role.agent);
+    const admin = AppUser(id: 'b', email: 'b@x.com', role: Role.admin);
+    const client = AppUser(id: 'c', email: 'c@x.com', role: Role.client);
+
+    for (final permission in [
+      Permission.favoriteProperties,
+      Permission.sendInquiries,
+      Permission.requestViewings,
+    ]) {
+      expect(client.can(permission), isTrue, reason: permission.name);
+      expect(agent.can(permission), isFalse, reason: permission.name);
+      expect(admin.can(permission), isFalse, reason: permission.name);
+    }
+    for (final permission in [
+      Permission.handleInquiries,
+      Permission.handleViewings,
+    ]) {
+      expect(agent.can(permission), isTrue, reason: permission.name);
+      expect(client.can(permission), isFalse, reason: permission.name);
+    }
+  });
 }

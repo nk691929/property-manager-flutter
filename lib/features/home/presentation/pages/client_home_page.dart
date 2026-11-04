@@ -23,6 +23,11 @@ class ClientHomePage extends StatelessWidget {
           label: l10n.homeSaved,
           route: AppRoutes.saved,
         ),
+        HomeActionButton(
+          icon: Icons.chat_bubble_outline,
+          label: l10n.homeMyInquiries,
+          route: AppRoutes.clientInquiries,
+        ),
       ],
     );
   }

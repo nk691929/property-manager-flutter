@@ -15,6 +15,10 @@ import 'package:property_manager/features/favorites/presentation/widgets/favorit
 import 'package:property_manager/features/home/presentation/pages/admin_home_page.dart';
 import 'package:property_manager/features/home/presentation/pages/agent_home_page.dart';
 import 'package:property_manager/features/home/presentation/pages/client_home_page.dart';
+import 'package:property_manager/features/inquiries/presentation/pages/inquiry_inbox_page.dart';
+import 'package:property_manager/features/inquiries/presentation/pages/inquiry_thread_page.dart';
+import 'package:property_manager/features/inquiries/presentation/pages/new_inquiry_page.dart';
+import 'package:property_manager/features/inquiries/presentation/widgets/contact_agent_bar.dart';
 import 'package:property_manager/features/platform_settings/presentation/pages/platform_settings_page.dart';
 import 'package:property_manager/features/properties/domain/entities/property_enums.dart';
 import 'package:property_manager/features/properties/presentation/pages/managed_listings_page.dart';
@@ -83,6 +87,7 @@ GoRouter appRouter(Ref ref) {
               return PropertyDetailPage(
                 propertyId: id,
                 actions: [FavoriteButton(propertyId: id)],
+                bottomBar: ContactAgentBar(propertyId: id),
               );
             },
           ),
@@ -134,6 +139,18 @@ GoRouter appRouter(Ref ref) {
               ),
             ],
           ),
+          GoRoute(
+            path: 'inquiries',
+            builder: (context, state) =>
+                const InquiryInboxPage(threadPath: AppRoutes.agentInquiry),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) =>
+                    InquiryThreadPage(inquiryId: state.pathParameters['id']!),
+              ),
+            ],
+          ),
         ],
       ),
       GoRoute(
@@ -143,6 +160,24 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: 'saved',
             builder: (context, state) => const SavedPropertiesPage(),
+          ),
+          GoRoute(
+            path: 'inquiries',
+            builder: (context, state) =>
+                const InquiryInboxPage(threadPath: AppRoutes.clientInquiry),
+            routes: [
+              GoRoute(
+                path: 'new/:propertyId',
+                builder: (context, state) => NewInquiryPage(
+                  propertyId: state.pathParameters['propertyId']!,
+                ),
+              ),
+              GoRoute(
+                path: ':id',
+                builder: (context, state) =>
+                    InquiryThreadPage(inquiryId: state.pathParameters['id']!),
+              ),
+            ],
           ),
         ],
       ),

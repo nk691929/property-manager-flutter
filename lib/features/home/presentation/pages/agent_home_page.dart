@@ -19,6 +19,11 @@ class AgentHomePage extends StatelessWidget {
           route: AppRoutes.agentListings,
         ),
         HomeActionButton(
+          icon: Icons.chat_bubble_outline,
+          label: l10n.homeInquiries,
+          route: AppRoutes.agentInquiries,
+        ),
+        HomeActionButton(
           icon: Icons.search,
           label: l10n.homeBrowse,
           route: AppRoutes.properties,

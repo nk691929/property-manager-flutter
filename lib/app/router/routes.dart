@@ -23,6 +23,13 @@ abstract final class AppRoutes {
   static const Set<String> _entryPoints = {root, splash, login, register};
   static String propertyDetail(String id) => '/properties/$id';
   static String agentListingEdit(String id) => '/agent/listings/$id/edit';
+  static const clientInquiries = '/client/inquiries';
+  static const agentInquiries = '/agent/inquiries';
+
+  static String clientInquiry(String id) => '/client/inquiries/$id';
+  static String agentInquiry(String id) => '/agent/inquiries/$id';
+  static String newInquiry(String propertyId) =>
+      '/client/inquiries/new/$propertyId';
 
   static bool isPublic(String location) =>
       _publicWhenSignedOut.contains(location);

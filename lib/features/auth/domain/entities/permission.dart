@@ -7,4 +7,9 @@ enum Permission {
   manageOwnProperties,
   manageAllProperties,
   manageSettings,
+  favoriteProperties,
+  sendInquiries,
+  handleInquiries,
+  requestViewings,
+  handleViewings,
 }

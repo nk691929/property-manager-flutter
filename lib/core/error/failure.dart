@@ -78,3 +78,11 @@ final class InvalidCredentialsFailure extends Failure {
 /// Converts any thrown value into a [Failure] (used at UI boundaries).
 Failure toFailure(Object error) =>
     error is Failure ? error : UnknownFailure(cause: error);
+
+/// The action clashes with existing data (e.g. a duplicate open inquiry).
+final class ConflictFailure extends Failure {
+  const new({super.cause, super.stackTrace});
+
+  @override
+  String get name => 'ConflictFailure';
+}

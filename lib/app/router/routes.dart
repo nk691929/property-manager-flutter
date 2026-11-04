@@ -17,6 +17,7 @@ abstract final class AppRoutes {
   static const adminListings = '/admin/listings';
   static const adminReview = '/admin/review';
   static const adminSettings = '/admin/settings';
+  static const saved = '/client/saved';
 
   static const Set<String> _publicWhenSignedOut = {login, register, about};
   static const Set<String> _entryPoints = {root, splash, login, register};

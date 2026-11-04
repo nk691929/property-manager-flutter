@@ -18,6 +18,11 @@ class ClientHomePage extends StatelessWidget {
           label: l10n.homeBrowse,
           route: AppRoutes.properties,
         ),
+        HomeActionButton(
+          icon: Icons.favorite_border,
+          label: l10n.homeSaved,
+          route: AppRoutes.saved,
+        ),
       ],
     );
   }

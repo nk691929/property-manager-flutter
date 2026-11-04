@@ -10,6 +10,8 @@ import 'package:property_manager/features/app_info/presentation/pages/app_info_p
 import 'package:property_manager/features/auth/presentation/pages/login_page.dart';
 import 'package:property_manager/features/auth/presentation/pages/register_page.dart';
 import 'package:property_manager/features/auth/presentation/providers/auth_providers.dart';
+import 'package:property_manager/features/favorites/presentation/pages/saved_properties_page.dart';
+import 'package:property_manager/features/favorites/presentation/widgets/favorite_button.dart';
 import 'package:property_manager/features/home/presentation/pages/admin_home_page.dart';
 import 'package:property_manager/features/home/presentation/pages/agent_home_page.dart';
 import 'package:property_manager/features/home/presentation/pages/client_home_page.dart';
@@ -69,12 +71,20 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.properties,
-        builder: (context, state) => const PropertyBrowsePage(),
+        builder: (context, state) => PropertyBrowsePage(
+          cardTrailing: (context, property) =>
+              FavoriteButton(propertyId: property.id),
+        ),
         routes: [
           GoRoute(
             path: ':id',
-            builder: (context, state) =>
-                PropertyDetailPage(propertyId: state.pathParameters['id']!),
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return PropertyDetailPage(
+                propertyId: id,
+                actions: [FavoriteButton(propertyId: id)],
+              );
+            },
           ),
         ],
       ),
@@ -129,6 +139,12 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.client,
         builder: (context, state) => const ClientHomePage(),
+        routes: [
+          GoRoute(
+            path: 'saved',
+            builder: (context, state) => const SavedPropertiesPage(),
+          ),
+        ],
       ),
     ],
     errorBuilder: (context, state) =>

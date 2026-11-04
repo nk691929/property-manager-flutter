@@ -228,5 +228,13 @@
   "@galleryCounter": {
     "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
   },
-  "listingSavedAddPhotos": "Listing saved. You can add photos now."
+  "listingSavedAddPhotos": "Listing saved. You can add photos now.",
+  "errorConflict": "That conflicts with something that already exists.",
+  "detailListedBy": "Listed by {name}",
+  "@detailListedBy": { "placeholders": { "name": { "type": "String" } } },
+  "favoriteAdd": "Save property",
+  "favoriteRemove": "Remove from saved",
+  "homeSaved": "Saved properties",
+  "savedTitle": "Saved properties",
+  "savedEmpty": "You haven't saved any properties yet. Tap the heart on a listing to save it."
 }

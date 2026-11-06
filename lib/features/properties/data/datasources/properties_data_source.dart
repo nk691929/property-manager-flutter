@@ -39,4 +39,8 @@ abstract interface class PropertiesDataSource {
   Future<Property> reassign(String id, String agentId);
 
   Future<void> delete(String id);
+
+  /// Rows the caller may see, in no particular order. Unknown or hidden ids
+  /// are simply missing from the result.
+  Future<List<Property>> listByIds(List<String> ids);
 }

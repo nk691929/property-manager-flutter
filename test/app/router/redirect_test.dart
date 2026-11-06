@@ -127,5 +127,79 @@ void main() {
         isNull,
       );
     });
+
+    test('saved properties are for clients only', () {
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.saved),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.saved),
+        AppRoutes.agent,
+      );
+      expect(
+        redirect(user: user(Role.admin), location: AppRoutes.saved),
+        AppRoutes.admin,
+      );
+    });
+
+    test('inquiry screens follow the role areas', () {
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.clientInquiries),
+        isNull,
+      );
+      expect(
+        redirect(
+          user: user(Role.client),
+          location: AppRoutes.newInquiry('p-1'),
+        ),
+        isNull,
+      );
+      expect(
+        redirect(
+          user: user(Role.agent),
+          location: AppRoutes.agentInquiry('i-1'),
+        ),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.clientInquiries),
+        AppRoutes.agent,
+      );
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.agentInquiries),
+        AppRoutes.client,
+      );
+    });
+
+    test('viewing screens follow the role areas', () {
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.clientViewings),
+        isNull,
+      );
+      expect(
+        redirect(
+          user: user(Role.client),
+          location: AppRoutes.newViewing('p-1'),
+        ),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.agentViewings),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.clientViewings),
+        AppRoutes.agent,
+      );
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.agentViewings),
+        AppRoutes.client,
+      );
+      expect(
+        redirect(user: user(Role.admin), location: AppRoutes.agentViewings),
+        AppRoutes.admin,
+      );
+    });
   });
 }

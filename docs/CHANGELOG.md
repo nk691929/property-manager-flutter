@@ -1,6 +1,15 @@
 # Changelog
 Format: Keep a Changelog. Versioning: SemVer; pre-1.0 tags are `v0.<n>.x-mvp<n>`.
 
+## [0.3.0-mvp3] - 2026-11-03
+### Added
+- Favorites with optimistic heart and a Saved list
+- Agent names on listings through a narrow `visible_names` window
+- Inquiry threads (client and agent) with inbox and close
+- Viewing requests with agent confirm/decline, cancel and completed
+- `ConflictFailure`; new permissions for favorites, inquiries and viewings
+- Supabase migration 0004 (favorites, inquiries, messages, viewings, rules)
+
 ## [0.2.1-mvp2.1] - 2026-11-02
 ### Added
 - Property photos: upload, cover, remove, gallery, card thumbnails

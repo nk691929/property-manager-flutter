@@ -186,6 +186,11 @@ final class FakePropertiesDataSource implements PropertiesDataSource {
     _require(id);
     _items.remove(id);
   }
+
+  @override
+  Future<List<Property>> listByIds(List<String> ids) async => [
+    for (final id in ids) ?_items[id],
+  ];
 }
 
 Property _seedProperty({

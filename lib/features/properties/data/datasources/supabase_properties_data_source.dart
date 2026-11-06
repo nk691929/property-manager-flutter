@@ -172,4 +172,14 @@ final class SupabasePropertiesDataSource implements PropertiesDataSource {
     final rows = await _client.from(_table).delete().eq('id', id).select();
     if (rows.isEmpty) throw const NotFoundFailure();
   });
+
+  @override
+  Future<List<Property>> listByIds(List<String> ids) => supabaseGuard(() async {
+    if (ids.isEmpty) return const <Property>[];
+    final rows = await _client
+        .from(_table)
+        .select(propertySelect)
+        .inFilter('id', ids);
+    return rows.map(_parse).toList();
+  });
 }

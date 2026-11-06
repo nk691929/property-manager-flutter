@@ -17,11 +17,25 @@ abstract final class AppRoutes {
   static const adminListings = '/admin/listings';
   static const adminReview = '/admin/review';
   static const adminSettings = '/admin/settings';
+  static const saved = '/client/saved';
 
   static const Set<String> _publicWhenSignedOut = {login, register, about};
   static const Set<String> _entryPoints = {root, splash, login, register};
   static String propertyDetail(String id) => '/properties/$id';
   static String agentListingEdit(String id) => '/agent/listings/$id/edit';
+  static const clientInquiries = '/client/inquiries';
+  static const agentInquiries = '/agent/inquiries';
+
+  static String clientInquiry(String id) => '/client/inquiries/$id';
+  static String agentInquiry(String id) => '/agent/inquiries/$id';
+  static String newInquiry(String propertyId) =>
+      '/client/inquiries/new/$propertyId';
+
+  static const clientViewings = '/client/viewings';
+  static const agentViewings = '/agent/viewings';
+
+  static String newViewing(String propertyId) =>
+      '/client/viewings/new/$propertyId';
 
   static bool isPublic(String location) =>
       _publicWhenSignedOut.contains(location);

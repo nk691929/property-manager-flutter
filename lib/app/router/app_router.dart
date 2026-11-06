@@ -4,15 +4,21 @@ import 'package:property_manager/app/router/not_found_page.dart';
 import 'package:property_manager/app/router/redirect.dart';
 import 'package:property_manager/app/router/routes.dart';
 import 'package:property_manager/app/router/splash_page.dart';
+import 'package:property_manager/app/widgets/property_engagement_bar.dart';
 import 'package:property_manager/core/providers/core_providers.dart';
 import 'package:property_manager/features/admin_users/presentation/pages/admin_users_page.dart';
 import 'package:property_manager/features/app_info/presentation/pages/app_info_page.dart';
 import 'package:property_manager/features/auth/presentation/pages/login_page.dart';
 import 'package:property_manager/features/auth/presentation/pages/register_page.dart';
 import 'package:property_manager/features/auth/presentation/providers/auth_providers.dart';
+import 'package:property_manager/features/favorites/presentation/pages/saved_properties_page.dart';
+import 'package:property_manager/features/favorites/presentation/widgets/favorite_button.dart';
 import 'package:property_manager/features/home/presentation/pages/admin_home_page.dart';
 import 'package:property_manager/features/home/presentation/pages/agent_home_page.dart';
 import 'package:property_manager/features/home/presentation/pages/client_home_page.dart';
+import 'package:property_manager/features/inquiries/presentation/pages/inquiry_inbox_page.dart';
+import 'package:property_manager/features/inquiries/presentation/pages/inquiry_thread_page.dart';
+import 'package:property_manager/features/inquiries/presentation/pages/new_inquiry_page.dart';
 import 'package:property_manager/features/platform_settings/presentation/pages/platform_settings_page.dart';
 import 'package:property_manager/features/properties/domain/entities/property_enums.dart';
 import 'package:property_manager/features/properties/presentation/pages/managed_listings_page.dart';
@@ -20,6 +26,8 @@ import 'package:property_manager/features/properties/presentation/pages/property
 import 'package:property_manager/features/properties/presentation/pages/property_detail_page.dart';
 import 'package:property_manager/features/properties/presentation/pages/property_form_page.dart';
 import 'package:property_manager/features/properties/presentation/providers/property_list_query.dart';
+import 'package:property_manager/features/viewings/presentation/pages/new_viewing_page.dart';
+import 'package:property_manager/features/viewings/presentation/pages/viewings_page.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_router.g.dart';
@@ -69,12 +77,21 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.properties,
-        builder: (context, state) => const PropertyBrowsePage(),
+        builder: (context, state) => PropertyBrowsePage(
+          cardTrailing: (context, property) =>
+              FavoriteButton(propertyId: property.id),
+        ),
         routes: [
           GoRoute(
             path: ':id',
-            builder: (context, state) =>
-                PropertyDetailPage(propertyId: state.pathParameters['id']!),
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return PropertyDetailPage(
+                propertyId: id,
+                actions: [FavoriteButton(propertyId: id)],
+                bottomBar: PropertyEngagementBar(propertyId: id),
+              );
+            },
           ),
         ],
       ),
@@ -124,11 +141,63 @@ GoRouter appRouter(Ref ref) {
               ),
             ],
           ),
+          GoRoute(
+            path: 'inquiries',
+            builder: (context, state) =>
+                const InquiryInboxPage(threadPath: AppRoutes.agentInquiry),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) =>
+                    InquiryThreadPage(inquiryId: state.pathParameters['id']!),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'viewings',
+            builder: (context, state) => const ViewingsPage(),
+          ),
         ],
       ),
       GoRoute(
         path: AppRoutes.client,
         builder: (context, state) => const ClientHomePage(),
+        routes: [
+          GoRoute(
+            path: 'saved',
+            builder: (context, state) => const SavedPropertiesPage(),
+          ),
+          GoRoute(
+            path: 'inquiries',
+            builder: (context, state) =>
+                const InquiryInboxPage(threadPath: AppRoutes.clientInquiry),
+            routes: [
+              GoRoute(
+                path: 'new/:propertyId',
+                builder: (context, state) => NewInquiryPage(
+                  propertyId: state.pathParameters['propertyId']!,
+                ),
+              ),
+              GoRoute(
+                path: ':id',
+                builder: (context, state) =>
+                    InquiryThreadPage(inquiryId: state.pathParameters['id']!),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'viewings',
+            builder: (context, state) => const ViewingsPage(),
+            routes: [
+              GoRoute(
+                path: 'new/:propertyId',
+                builder: (context, state) => NewViewingPage(
+                  propertyId: state.pathParameters['propertyId']!,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
     errorBuilder: (context, state) =>

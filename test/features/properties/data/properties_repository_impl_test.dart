@@ -89,4 +89,12 @@ void main() {
     final result = await repository.getById('nope');
     expect(result.failureOrNull, isA<NotFoundFailure>());
   });
+
+  test('listByIds keeps the requested order and skips unknown ids', () async {
+    final result = await repository.listByIds(['p-3', 'nope', 'p-1']);
+    expect(
+      [for (final p in result.valueOrNull ?? <Property>[]) p.id],
+      ['p-3', 'p-1'],
+    );
+  });
 }

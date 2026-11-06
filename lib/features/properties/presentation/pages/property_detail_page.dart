@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:property_manager/app/theme/design_tokens.dart';
 import 'package:property_manager/core/error/failure.dart';
 import 'package:property_manager/core/presentation/widgets/error_view.dart';
-import 'package:property_manager/features/inquiries/presentation/widgets/contact_agent_bar.dart';
 import 'package:property_manager/features/properties/domain/entities/property.dart';
 import 'package:property_manager/features/properties/domain/entities/property_enums.dart';
 import 'package:property_manager/features/properties/presentation/extensions/property_format.dart';
@@ -17,13 +16,16 @@ import 'package:property_manager/l10n/l10n.dart';
 class PropertyDetailPage extends ConsumerWidget {
   const new({
     required this.propertyId,
-    required this.bottomBar,
+    this.bottomBar,
     this.actions = const [],
     super.key,
   });
 
   final String propertyId;
-  final ContactAgentBar bottomBar;
+
+  /// Bottom slot plugged in by the app layer (e.g. contact and viewing
+  /// buttons). The page doesn't know which widget goes here.
+  final Widget? bottomBar;
 
   /// App-bar actions plugged in by the app layer (e.g. the heart).
   final List<Widget> actions;
@@ -34,8 +36,8 @@ class PropertyDetailPage extends ConsumerWidget {
     final detail = ref.watch(propertyDetailProvider(propertyId));
 
     return Scaffold(
-      bottomNavigationBar: bottomBar,
       appBar: AppBar(title: Text(l10n.detailTitle), actions: actions),
+      bottomNavigationBar: bottomBar,
       body: detail.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => ErrorView(

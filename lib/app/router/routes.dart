@@ -31,6 +31,12 @@ abstract final class AppRoutes {
   static String newInquiry(String propertyId) =>
       '/client/inquiries/new/$propertyId';
 
+  static const clientViewings = '/client/viewings';
+  static const agentViewings = '/agent/viewings';
+
+  static String newViewing(String propertyId) =>
+      '/client/viewings/new/$propertyId';
+
   static bool isPublic(String location) =>
       _publicWhenSignedOut.contains(location);
 

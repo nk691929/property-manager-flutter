@@ -28,6 +28,11 @@ class ClientHomePage extends StatelessWidget {
           label: l10n.homeMyInquiries,
           route: AppRoutes.clientInquiries,
         ),
+        HomeActionButton(
+          icon: Icons.event_available_outlined,
+          label: l10n.homeMyViewings,
+          route: AppRoutes.clientViewings,
+        ),
       ],
     );
   }

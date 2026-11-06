@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:property_manager/app/router/routes.dart';
 import 'package:property_manager/app/theme/design_tokens.dart';
+import 'package:property_manager/features/properties/domain/entities/property.dart';
 import 'package:property_manager/features/properties/presentation/providers/property_list_providers.dart';
 import 'package:property_manager/features/properties/presentation/providers/property_list_query.dart';
 import 'package:property_manager/features/properties/presentation/widgets/paged_property_list.dart';
@@ -13,8 +14,11 @@ import 'package:property_manager/features/properties/presentation/widgets/proper
 import 'package:property_manager/l10n/l10n.dart';
 
 class PropertyBrowsePage extends ConsumerStatefulWidget {
-  const new({super.key});
+  const new({this.cardTrailing, super.key});
 
+  /// Slot for an optional widget on each card. The app layer plugs the heart
+  /// in here, so this feature never imports `favorites`.
+  final Widget Function(BuildContext context, Property property)? cardTrailing;
   @override
   ConsumerState<PropertyBrowsePage> createState() => _PropertyBrowsePageState();
 }
@@ -98,6 +102,7 @@ class _PropertyBrowsePageState extends ConsumerState<PropertyBrowsePage> {
               emptyMessage: l10n.browseEmpty,
               itemBuilder: (context, property) => PropertyCard(
                 property: property,
+                trailing: widget.cardTrailing?.call(context, property),
                 onTap: () => unawaited(
                   context.push(AppRoutes.propertyDetail(property.id)),
                 ),

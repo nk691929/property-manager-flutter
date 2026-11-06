@@ -42,4 +42,6 @@ abstract interface class PropertiesRepository {
   Future<Result<Property>> reassign(String id, String agentId);
 
   Future<Result<void>> delete(String id);
+
+  Future<Result<List<Property>>> listByIds(List<String> ids);
 }

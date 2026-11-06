@@ -75,4 +75,8 @@ final class PropertiesRepositoryImpl implements PropertiesRepository {
   @override
   Future<Result<void>> delete(String id) =>
       runCatching(() => _dataSource.delete(id));
+
+  @override
+  Future<Result<List<Property>>> listByIds(List<String> ids) =>
+      runCatching(() => _dataSource.listByIds(ids));
 }

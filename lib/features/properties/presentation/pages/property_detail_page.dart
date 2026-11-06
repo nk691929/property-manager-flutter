@@ -10,12 +10,25 @@ import 'package:property_manager/features/properties/presentation/extensions/pro
 import 'package:property_manager/features/properties/presentation/providers/property_list_providers.dart';
 import 'package:property_manager/features/properties/presentation/widgets/property_gallery.dart';
 import 'package:property_manager/features/properties/presentation/widgets/property_status_chip.dart';
+import 'package:property_manager/features/user_directory/presentation/providers/user_directory_providers.dart';
 import 'package:property_manager/l10n/l10n.dart';
 
 class PropertyDetailPage extends ConsumerWidget {
-  const new({required this.propertyId, super.key});
+  const new({
+    required this.propertyId,
+    this.bottomBar,
+    this.actions = const [],
+    super.key,
+  });
 
   final String propertyId;
+
+  /// Bottom slot plugged in by the app layer (e.g. contact and viewing
+  /// buttons). The page doesn't know which widget goes here.
+  final Widget? bottomBar;
+
+  /// App-bar actions plugged in by the app layer (e.g. the heart).
+  final List<Widget> actions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,7 +36,8 @@ class PropertyDetailPage extends ConsumerWidget {
     final detail = ref.watch(propertyDetailProvider(propertyId));
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.detailTitle)),
+      appBar: AppBar(title: Text(l10n.detailTitle), actions: actions),
+      bottomNavigationBar: bottomBar,
       body: detail.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => ErrorView(
@@ -103,12 +117,34 @@ class _Detail extends StatelessWidget {
         Text(l10n.detailLocation, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.xs),
         Text(location),
+        const SizedBox(height: AppSpacing.md),
+        _AgentLine(agentId: property.agentId),
         if (property.description.trim().isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
           Text(l10n.detailDescription, style: theme.textTheme.titleMedium),
           const SizedBox(height: AppSpacing.xs),
           Text(property.description),
         ],
+      ],
+    );
+  }
+}
+
+class _AgentLine extends ConsumerWidget {
+  const new({required this.agentId});
+
+  final String agentId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final name = ref.watch(userNameProvider(agentId)).value;
+    return Row(
+      children: [
+        const Icon(Icons.person_outline, size: 18),
+        const SizedBox(width: AppSpacing.xs),
+        // Name only. Contact goes through inquiries, never direct details.
+        Text(l10n.detailListedBy(name ?? l10n.roleAgent)),
       ],
     );
   }

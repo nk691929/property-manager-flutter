@@ -138,3 +138,43 @@ property row is gone the storage policies can no longer prove ownership.
 The picker shrinks images (max 1600 px, quality 80). Domain rules check count,
 size and type (type from magic bytes, not file names). The bucket limits, the
 10-photo trigger and RLS are the real enforcement.
+
+### ADR-021: Aggregates and agent derivation
+Inquiries and viewings store the client and the property, not the agent. The
+agent is read from the property's current owner at load time (resource
+embedding), so reassigning a listing moves its conversations and viewings to
+the new agent with no data fix. The old agent loses access automatically.
+
+### ADR-022: Optimistic updates roll back only their own change
+`FavoriteIds` flips the heart before the request finishes. On failure it undoes
+just that property, never restoring a saved copy of the whole list, so taps made
+meanwhile survive. A per-property in-flight set drops double taps. The provider
+watches the current user so one person's hearts never leak to the next sign-in.
+
+### ADR-023: Cross-feature composition lives in the app layer
+Features never import each other's presentation code. The app layer plugs
+widgets into slots (`cardTrailing`, `actions`, `bottomBar`), e.g.
+`PropertyEngagementBar` places the inquiry and viewing buttons on the property
+detail screen. Domain-level dependencies point only at interfaces
+(`ListFavoriteProperties` uses `PropertiesRepository`).
+
+### ADR-024: A narrow window into private data
+`profiles` stays private. `visible_names(ids)` is a SECURITY DEFINER function
+returning only id and name, and only for people the caller has a legitimate
+relationship with (an agent with a published listing, or the other party in an
+inquiry or viewing). A function, not a view, so RLS is not bypassed for everyone.
+Email and phone are never exposed to other users.
+
+### ADR-025: Multi-row writes go through a database function
+`create_inquiry` creates the inquiry and its first message in one transaction
+(PostgREST would issue two independent requests). Single-row writes (a viewing
+request, a message) use plain inserts guarded by triggers. Column-level grants
+(`grant update (status)`) freeze every other column of an inquiry or viewing.
+
+### ADR-026: Business rules at the database edge, mirrored in Dart
+The viewing state machine and time window exist as `ViewingWorkflow` /
+`ViewingRules` (Dart, instant UX, unit-tested with an injected clock) and as
+`guard_viewing_write` (SQL, authoritative). Partial unique indexes enforce "one
+open inquiry" and "one active viewing" per client and listing even when two taps
+race. A conflict on a stale screen refreshes the list instead of repeating the
+error.

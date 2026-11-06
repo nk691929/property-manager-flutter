@@ -244,3 +244,53 @@ Shrink at pick time (max size and quality), decode thumbnails at a smaller width
 Once the row is gone, the storage policy can't look up the owner and refuses the
 deletes. Removing photos first (row, then file) and then the property keeps every
 step authorized.
+
+## Engagement features, privacy and consistency
+
+**[Medium] What is an optimistic update and how do you roll one back safely?**
+Change the UI first and send the request in the background. On failure undo
+only that one change; restoring an old snapshot would also erase other taps made
+meanwhile. Track in-flight operations so a double tap doesn't race two opposite
+requests.
+
+**[Hard] Why derive the agent from the property instead of storing it on an inquiry?**
+Ownership changes. If conversations store an agent id, reassigning a listing
+leaves the old agent with access. Deriving it from the current owner moves
+everything automatically.
+
+**[Hard] How do you expose a name without exposing the profile table?**
+A SECURITY DEFINER function with an exact shape (id and name) and a relationship
+check, with its search_path pinned and execution revoked from anonymous callers.
+A view owned by the database admin would bypass RLS for everyone.
+
+**[Medium] Why does creating an inquiry go through an RPC?**
+It writes two rows that must exist together. PostgREST sends each insert as its
+own request, so a failure between them would leave an empty thread. A database
+function runs both in one transaction.
+
+**[Medium] What are column-level grants for?**
+RLS limits which rows you may update; column grants limit which columns.
+`grant update (status)` lets a participant close an inquiry but not change its
+client or listing, even with a hand-written API call.
+
+**[Medium] How do partial unique indexes enforce "one open conversation"?**
+`unique (...) where status = 'open'` lets many closed rows coexist but only one
+open one. The database decides even when two taps race, which an app-side check
+cannot.
+
+**[Medium] How do you test time-dependent rules?**
+Inject the clock as a function (`Now`) and pass a fixed time. Tests move time
+forward instead of waiting.
+
+**[Medium] How should a UI react to a stale-state error?**
+Distinguish it from a permission error (`ConflictFailure` vs `ForbiddenFailure`),
+and refresh the data so the screen shows what is true now.
+
+**[Medium] Why compose features in the app layer?**
+So features don't import each other's UI. Slots (`bottomBar`, `cardTrailing`)
+let the app plug widgets in; otherwise properties and favorites would import each
+other and form a cycle.
+
+**[Medium] Why send times as UTC?**
+`timestamptz` stores an instant. Send `toUtc().toIso8601String()`, store UTC and
+convert to local only for display, so users in other time zones see correct times.

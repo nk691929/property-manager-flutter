@@ -171,5 +171,35 @@ void main() {
         AppRoutes.client,
       );
     });
+
+    test('viewing screens follow the role areas', () {
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.clientViewings),
+        isNull,
+      );
+      expect(
+        redirect(
+          user: user(Role.client),
+          location: AppRoutes.newViewing('p-1'),
+        ),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.agentViewings),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.clientViewings),
+        AppRoutes.agent,
+      );
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.agentViewings),
+        AppRoutes.client,
+      );
+      expect(
+        redirect(user: user(Role.admin), location: AppRoutes.agentViewings),
+        AppRoutes.admin,
+      );
+    });
   });
 }

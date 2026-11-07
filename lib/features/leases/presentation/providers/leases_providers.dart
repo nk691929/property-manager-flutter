@@ -1,3 +1,4 @@
+import 'package:property_manager/core/error/failure.dart';
 import 'package:property_manager/core/providers/core_providers.dart';
 import 'package:property_manager/core/providers/supabase_provider.dart';
 import 'package:property_manager/core/result/result.dart';
@@ -9,12 +10,16 @@ import 'package:property_manager/features/leases/data/repositories/leases_reposi
 import 'package:property_manager/features/leases/domain/entities/leasable_property.dart';
 import 'package:property_manager/features/leases/domain/entities/lease.dart';
 import 'package:property_manager/features/leases/domain/entities/new_lease.dart';
+import 'package:property_manager/features/leases/domain/entities/new_payment.dart';
 import 'package:property_manager/features/leases/domain/repositories/leases_repository.dart';
 import 'package:property_manager/features/leases/domain/usecases/create_lease.dart';
+import 'package:property_manager/features/leases/domain/usecases/end_lease.dart';
 import 'package:property_manager/features/leases/domain/usecases/get_lease.dart';
 import 'package:property_manager/features/leases/domain/usecases/list_leasable_properties.dart';
 import 'package:property_manager/features/leases/domain/usecases/list_my_leases.dart';
 import 'package:property_manager/features/leases/domain/usecases/list_tenant_candidates.dart';
+import 'package:property_manager/features/leases/domain/usecases/record_payment.dart';
+import 'package:property_manager/features/leases/domain/usecases/void_payment.dart';
 import 'package:property_manager/features/properties/presentation/providers/properties_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -111,8 +116,28 @@ Future<List<LeasableProperty>> leasableProperties(Ref ref) async {
   );
 }
 
+@riverpod
+RecordPayment recordPayment(Ref ref) => RecordPayment(
+  ref.watch(leasesRepositoryProvider),
+  () => ref.read(currentUserProvider),
+  now: ref.watch(clockProvider),
+);
+
+@riverpod
+VoidPayment voidPayment(Ref ref) => VoidPayment(
+  ref.watch(leasesRepositoryProvider),
+  () => ref.read(currentUserProvider),
+);
+
+@riverpod
+EndLease endLease(Ref ref) => EndLease(
+  ref.watch(leasesRepositoryProvider),
+  () => ref.read(currentUserProvider),
+);
+
 /// Mutations. keepAlive so the notifier outlives the page that called it
 /// (a successful create replaces its own page).
+/// Mutations. keepAlive so the notifier outlives the page that called it.
 @Riverpod(keepAlive: true)
 class LeaseActions extends _$LeaseActions {
   @override
@@ -127,5 +152,57 @@ class LeaseActions extends _$LeaseActions {
         ..invalidate(leasablePropertiesProvider);
     }
     return result;
+  }
+
+  /// Returns null on success, or the failure to show.
+  Future<Failure?> recordPayment(NewPayment payment) =>
+      _run(() => ref.read(recordPaymentProvider)(payment));
+
+  Future<Failure?> voidPayment({
+    required String leaseId,
+    required String paymentId,
+    required String reason,
+  }) => _run(
+    () => ref.read(voidPaymentProvider)(
+      leaseId: leaseId,
+      paymentId: paymentId,
+      reason: reason,
+    ),
+  );
+
+  Future<Failure?> endLease(String leaseId, DateTime endOn) => _run(
+    () => ref.read(endLeaseProvider)(leaseId: leaseId, endOn: endOn),
+    refreshProperties: true,
+  );
+
+  void _refresh({bool refreshProperties = false}) {
+    ref
+      ..invalidate(leaseListProvider)
+      ..invalidate(leaseDetailProvider);
+    // An ended lease frees its listing for a new lease.
+    if (refreshProperties) ref.invalidate(leasablePropertiesProvider);
+  }
+
+  Future<Failure?> _run<T>(
+    Future<Result<T>> Function() action, {
+    bool refreshProperties = false,
+  }) async {
+    final result = await action();
+    if (!ref.mounted) return null;
+    return result.fold<Failure?>(
+      onOk: (_) {
+        _refresh(refreshProperties: refreshProperties);
+        return null;
+      },
+      onErr: (failure) {
+        // A stale screen (someone acted first): show what is true now.
+        if (failure is ConflictFailure ||
+            failure is ForbiddenFailure ||
+            failure is NotFoundFailure) {
+          _refresh(refreshProperties: refreshProperties);
+        }
+        return failure;
+      },
+    );
   }
 }

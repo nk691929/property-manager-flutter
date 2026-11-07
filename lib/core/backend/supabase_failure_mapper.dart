@@ -46,6 +46,7 @@ Failure mapSupabaseError(Object error, StackTrace stackTrace) {
       'PGRST301' => UnauthorizedFailure(cause: error, stackTrace: stackTrace),
       '23505' => ConflictFailure(cause: error, stackTrace: stackTrace),
       'P0002' => NotFoundFailure(cause: error, stackTrace: stackTrace),
+      '55000' => ConflictFailure(cause: error, stackTrace: stackTrace),
       _ => UnknownFailure(cause: error, stackTrace: stackTrace),
     };
   }

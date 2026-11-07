@@ -33,6 +33,11 @@ class ClientHomePage extends StatelessWidget {
           label: l10n.homeMyViewings,
           route: AppRoutes.clientViewings,
         ),
+        HomeActionButton(
+          icon: Icons.assignment_outlined,
+          label: l10n.homeMyTenancy,
+          route: AppRoutes.clientLeases,
+        ),
       ],
     );
   }

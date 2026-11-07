@@ -294,3 +294,45 @@ other and form a cycle.
 **[Medium] Why send times as UTC?**
 `timestamptz` stores an instant. Send `toUtc().toIso8601String()`, store UTC and
 convert to local only for display, so users in other time zones see correct times.
+
+## Money, time and ledgers
+
+**[Easy] Why not use a double for money?**
+Binary floating point can't represent most decimal fractions exactly (0.1 + 0.2 is
+0.30000000000000004), so totals drift. Store whole minor units as an integer, plus
+a currency.
+
+**[Medium] What does "derived state" mean and why use it for overdue?**
+Compute a value from other data instead of storing it. "Overdue" depends on today's
+date, so a stored flag goes stale overnight unless a job rewrites it, and it can
+disagree with the payments. Computing it from charge, payments and the clock is
+always consistent.
+
+**[Medium] How do you test time-dependent rules?**
+Inject the clock (`Now`) and pass a fixed value. Tests move the clock instead of
+waiting, and cover the boundary: a charge due on 1 March is not overdue on 1 March.
+
+**[Hard] Why is a payment ledger append-only?**
+For audit and reconciliation: a dispute needs the history, and the books must match
+bank statements. Mistakes are corrected by a new fact (a void with a reason), never
+by erasing one. The foreign key is `on delete restrict` so the history can't vanish
+through a cascade.
+
+**[Hard] Two agents record a payment at the same instant. What stops an overpayment?**
+The database trigger locks the charge row (`select ... for update`) before checking
+the total, so the payments run one after the other and the second sees the first.
+An application-level check alone can't, because both would read the same old total.
+
+**[Medium] Why is a date different from a timestamp?**
+A due date is a calendar day with no time zone. Model it as a date (local midnight
+in Dart, a `date` column in Postgres) so it never shifts with the user's offset. Do
+month arithmetic by calendar rules, not 30-day blocks.
+
+**[Medium] How do you keep client and server rules from drifting apart?**
+Mirror them deliberately (the schedule loop in SQL and `LeaseSchedule` in Dart), pin
+the Dart side with tests that use the same example as the SQL check, and treat the
+database as the authority.
+
+**[Medium] How does a screen react when the data changed under it?**
+Distinguish a stale-state error (`ConflictFailure`) from a permission error, show a
+specific message, and refresh the data so the screen shows what is true now.

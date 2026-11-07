@@ -78,4 +78,17 @@ void main() {
       expect(client.can(permission), isFalse, reason: permission.name);
     }
   });
+
+  test('lease permissions follow the roles', () {
+    const agent = AppUser(id: 'a', email: 'a@x.com', role: Role.agent);
+    const admin = AppUser(id: 'b', email: 'b@x.com', role: Role.admin);
+    const client = AppUser(id: 'c', email: 'c@x.com', role: Role.client);
+
+    expect(agent.can(Permission.manageLeases), isTrue);
+    expect(agent.can(Permission.viewOwnLeases), isFalse);
+    expect(client.can(Permission.viewOwnLeases), isTrue);
+    expect(client.can(Permission.manageLeases), isFalse);
+    expect(admin.can(Permission.manageLeases), isFalse);
+    expect(admin.can(Permission.viewOwnLeases), isFalse);
+  });
 }

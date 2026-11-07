@@ -2,6 +2,7 @@ import 'package:property_manager/core/money/money.dart';
 import 'package:property_manager/features/leases/domain/entities/lease.dart';
 import 'package:property_manager/features/leases/domain/entities/lease_enums.dart';
 import 'package:property_manager/features/leases/domain/entities/new_lease.dart';
+import 'package:property_manager/features/leases/domain/entities/new_payment.dart';
 import 'package:property_manager/features/leases/domain/entities/rent_charge.dart';
 import 'package:property_manager/features/leases/domain/entities/rent_payment.dart';
 
@@ -78,4 +79,20 @@ NewLease sampleNewLease({
   monthlyRent: rent ?? pkr(50000),
   securityDeposit: deposit ?? pkr(100000),
   dueDay: dueDay,
+);
+
+NewPayment sampleNewPayment({
+  required String chargeId,
+  String leaseId = 'l-1',
+  int amount = 50000,
+  DateTime? paidOn,
+  PaymentMethod method = PaymentMethod.cash,
+  String reference = '',
+}) => NewPayment(
+  leaseId: leaseId,
+  chargeId: chargeId,
+  amount: pkr(amount),
+  paidOn: paidOn ?? DateTime(2027, 1, 5),
+  method: method,
+  reference: reference,
 );

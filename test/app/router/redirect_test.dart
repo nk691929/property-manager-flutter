@@ -201,5 +201,43 @@ void main() {
         AppRoutes.admin,
       );
     });
+
+    test('lease screens follow the role areas', () {
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.agentLeases),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.agentLeaseNew),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.agentLease('l-1')),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.clientLeases),
+        isNull,
+      );
+      expect(
+        redirect(
+          user: user(Role.client),
+          location: AppRoutes.clientLease('l-1'),
+        ),
+        isNull,
+      );
+      expect(
+        redirect(user: user(Role.client), location: AppRoutes.agentLeaseNew),
+        AppRoutes.client,
+      );
+      expect(
+        redirect(user: user(Role.agent), location: AppRoutes.clientLeases),
+        AppRoutes.agent,
+      );
+      expect(
+        redirect(user: user(Role.admin), location: AppRoutes.agentLeases),
+        AppRoutes.admin,
+      );
+    });
   });
 }

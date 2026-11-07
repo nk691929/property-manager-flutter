@@ -15,6 +15,7 @@ Set<Permission> permissionsFor(Role role) => switch (role) {
     Permission.manageOwnProperties,
     Permission.handleInquiries,
     Permission.handleViewings,
+    Permission.manageLeases,
   },
   Role.client => const {
     Permission.accessClientArea,
@@ -22,5 +23,6 @@ Set<Permission> permissionsFor(Role role) => switch (role) {
     Permission.favoriteProperties,
     Permission.sendInquiries,
     Permission.requestViewings,
+    Permission.viewOwnLeases,
   },
 };

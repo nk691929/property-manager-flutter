@@ -178,3 +178,39 @@ The viewing state machine and time window exist as `ViewingWorkflow` /
 open inquiry" and "one active viewing" per client and listing even when two taps
 race. A conflict on a stale screen refreshes the list instead of repeating the
 error.
+
+### ADR-027: Money is whole minor units, never a double
+`Money` stores an `int` of minor units (paisa) plus a currency. Floating point
+cannot represent amounts like 0.10 exactly, so sums drift. Parsing refuses more
+than two decimals rather than silently truncating, mixing currencies throws, and
+the database's `numeric` (a number or text on the wire) is read exactly.
+
+### ADR-028: Charge status is derived, never stored
+Paid, partly paid, due, overdue and cancelled are computed from the charge, its
+payments and today's date (`RentCharge.statusOn`). A stored status would go stale
+overnight and could disagree with the payments table. The clock is injected
+(`clockProvider`), so tests and screens use a fixed "today". A charge is overdue
+from the day AFTER its due date.
+
+### ADR-029: Payments form an append-only ledger
+Payments are never deleted or edited. A mistake is voided with a reason
+(`voided_at`, `void_reason`), and voided payments stay visible and no longer
+count. `rent_payments.charge_id` is `on delete restrict`, and only the void
+columns are grantable for update.
+
+### ADR-030: Record-only payments behind a seam
+The app records money received (cash, bank transfer, cheque) and tracks what is
+due; no money moves through it. A payment gateway can be added later as another
+payment method behind the same repository interface and use case.
+
+### ADR-031: Lock, then check, for concurrent writes
+`guard_payment_insert` runs `select ... for update` on the charge before it checks
+the total, so two simultaneous payments run one after the other and the second
+sees the first. The Dart use case reloads the lease for a friendly early message;
+the trigger is the authority. On a stale screen the notifier refreshes the lease.
+
+### ADR-032: Calendar dates are local-midnight values
+A due date or payment date is a day, not an instant. `Calendar` models it as a
+local-midnight `DateTime` and does month arithmetic like Postgres (31 Jan + 1
+month = 28 Feb). Payment dates allow one day of tolerance because the server runs
+in UTC while users may be ahead of it.

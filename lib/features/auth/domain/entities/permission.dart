@@ -12,4 +12,6 @@ enum Permission {
   handleInquiries,
   requestViewings,
   handleViewings,
+  manageLeases,
+  viewOwnLeases,
 }

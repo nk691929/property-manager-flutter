@@ -1,6 +1,15 @@
 # Changelog
 Format: Keep a Changelog. Versioning: SemVer; pre-1.0 tags are `v0.<n>.x-mvp<n>`.
 
+## [0.4.0-mvp4] - 2026-11-07
+### Added
+- Leases with a generated monthly rent schedule
+- Record, partial-pay and void payments (append-only ledger); end a lease with a preview
+- Derived charge status (paid, partly paid, due, overdue, cancelled)
+- `Money` value object and `Calendar` date helpers; injected clock
+- Supabase migrations 0005 (leases, charges, payments, functions) and 0006
+  (tenant keeps listing access after it is archived)
+
 ## [0.3.0-mvp3] - 2026-11-03
 ### Added
 - Favorites with optimistic heart and a Saved list

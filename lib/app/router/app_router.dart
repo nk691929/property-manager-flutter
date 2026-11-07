@@ -19,6 +19,9 @@ import 'package:property_manager/features/home/presentation/pages/client_home_pa
 import 'package:property_manager/features/inquiries/presentation/pages/inquiry_inbox_page.dart';
 import 'package:property_manager/features/inquiries/presentation/pages/inquiry_thread_page.dart';
 import 'package:property_manager/features/inquiries/presentation/pages/new_inquiry_page.dart';
+import 'package:property_manager/features/leases/presentation/pages/lease_detail_page.dart';
+import 'package:property_manager/features/leases/presentation/pages/leases_page.dart';
+import 'package:property_manager/features/leases/presentation/pages/new_lease_page.dart';
 import 'package:property_manager/features/platform_settings/presentation/pages/platform_settings_page.dart';
 import 'package:property_manager/features/properties/domain/entities/property_enums.dart';
 import 'package:property_manager/features/properties/presentation/pages/managed_listings_page.dart';
@@ -157,6 +160,22 @@ GoRouter appRouter(Ref ref) {
             path: 'viewings',
             builder: (context, state) => const ViewingsPage(),
           ),
+          GoRoute(
+            path: 'leases',
+            builder: (context, state) =>
+                const LeasesPage(leasePath: AppRoutes.agentLease),
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (context, state) => const NewLeasePage(),
+              ),
+              GoRoute(
+                path: ':id',
+                builder: (context, state) =>
+                    LeaseDetailPage(leaseId: state.pathParameters['id']!),
+              ),
+            ],
+          ),
         ],
       ),
       GoRoute(
@@ -194,6 +213,18 @@ GoRouter appRouter(Ref ref) {
                 builder: (context, state) => NewViewingPage(
                   propertyId: state.pathParameters['propertyId']!,
                 ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'leases',
+            builder: (context, state) =>
+                const LeasesPage(leasePath: AppRoutes.clientLease),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) =>
+                    LeaseDetailPage(leaseId: state.pathParameters['id']!),
               ),
             ],
           ),

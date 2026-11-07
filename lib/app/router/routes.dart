@@ -18,6 +18,12 @@ abstract final class AppRoutes {
   static const adminReview = '/admin/review';
   static const adminSettings = '/admin/settings';
   static const saved = '/client/saved';
+  static const agentLeases = '/agent/leases';
+  static const agentLeaseNew = '/agent/leases/new';
+  static const clientLeases = '/client/leases';
+
+  static String agentLease(String id) => '/agent/leases/$id';
+  static String clientLease(String id) => '/client/leases/$id';
 
   static const Set<String> _publicWhenSignedOut = {login, register, about};
   static const Set<String> _entryPoints = {root, splash, login, register};

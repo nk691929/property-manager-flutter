@@ -33,6 +33,11 @@ class AgentHomePage extends StatelessWidget {
           label: l10n.homeViewings,
           route: AppRoutes.agentViewings,
         ),
+        HomeActionButton(
+          icon: Icons.assignment_outlined,
+          label: l10n.homeLeases,
+          route: AppRoutes.agentLeases,
+        ),
       ],
     );
   }

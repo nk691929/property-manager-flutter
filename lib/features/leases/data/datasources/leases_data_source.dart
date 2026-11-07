@@ -1,6 +1,8 @@
 import 'package:property_manager/features/leases/domain/entities/leasable_property.dart';
 import 'package:property_manager/features/leases/domain/entities/lease.dart';
 import 'package:property_manager/features/leases/domain/entities/new_lease.dart';
+import 'package:property_manager/features/leases/domain/entities/new_payment.dart';
+import 'package:property_manager/features/leases/domain/entities/rent_payment.dart';
 
 /// Backend seam. Implementations throw typed `Failure`s, never SDK exceptions.
 abstract interface class LeasesDataSource {
@@ -15,4 +17,11 @@ abstract interface class LeasesDataSource {
   Future<List<LeasableProperty>> leasableProperties(String agentId);
 
   Future<Lease> create(NewLease draft);
+
+  Future<RentPayment> recordPayment(NewPayment payment);
+
+  Future<RentPayment> voidPayment(String paymentId, String reason);
+
+  /// Returns the lease as it is after ending.
+  Future<Lease> endLease(String leaseId, DateTime endOn);
 }

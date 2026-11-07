@@ -4,6 +4,8 @@ import 'package:property_manager/features/leases/data/datasources/leases_data_so
 import 'package:property_manager/features/leases/domain/entities/leasable_property.dart';
 import 'package:property_manager/features/leases/domain/entities/lease.dart';
 import 'package:property_manager/features/leases/domain/entities/new_lease.dart';
+import 'package:property_manager/features/leases/domain/entities/new_payment.dart';
+import 'package:property_manager/features/leases/domain/entities/rent_payment.dart';
 import 'package:property_manager/features/leases/domain/repositories/leases_repository.dart';
 
 final class LeasesRepositoryImpl implements LeasesRepository {
@@ -38,4 +40,16 @@ final class LeasesRepositoryImpl implements LeasesRepository {
   @override
   Future<Result<Lease>> create(NewLease draft) =>
       runCatching(() => _dataSource.create(draft));
+
+  @override
+  Future<Result<RentPayment>> recordPayment(NewPayment payment) =>
+      runCatching(() => _dataSource.recordPayment(payment));
+
+  @override
+  Future<Result<RentPayment>> voidPayment(String paymentId, String reason) =>
+      runCatching(() => _dataSource.voidPayment(paymentId, reason));
+
+  @override
+  Future<Result<Lease>> endLease(String leaseId, DateTime endOn) =>
+      runCatching(() => _dataSource.endLease(leaseId, endOn));
 }

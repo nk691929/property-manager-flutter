@@ -5,7 +5,10 @@ import 'package:property_manager/features/leases/domain/entities/leasable_proper
 import 'package:property_manager/features/leases/domain/entities/lease.dart';
 import 'package:property_manager/features/leases/domain/entities/lease_enums.dart';
 import 'package:property_manager/features/leases/domain/entities/new_lease.dart';
+import 'package:property_manager/features/leases/domain/entities/new_payment.dart';
 import 'package:property_manager/features/leases/domain/entities/rent_charge.dart';
+import 'package:property_manager/features/leases/domain/entities/rent_payment.dart';
+import 'package:property_manager/features/leases/domain/rules/lease_ending.dart';
 import 'package:property_manager/features/leases/domain/rules/lease_schedule.dart';
 import 'package:property_manager/features/properties/data/datasources/properties_data_source.dart';
 import 'package:property_manager/features/properties/domain/entities/property_enums.dart';
@@ -131,5 +134,108 @@ final class FakeLeasesDataSource implements LeasesDataSource {
       ],
     );
     return _leases[id] = lease;
+  }
+
+  Lease _replace(String id, Lease Function(Lease) change) =>
+      _leases[id] = change(_require(id));
+
+  @override
+  Future<RentPayment> recordPayment(NewPayment payment) async {
+    final lease = _require(payment.leaseId);
+    final charge = lease.charges
+        .where((c) => c.id == payment.chargeId)
+        .firstOrNull;
+    if (charge == null) throw const NotFoundFailure();
+    if (charge.isCancelled) throw const ConflictFailure();
+    if (payment.amount > charge.balance) {
+      throw const ValidationFailure({'amount': 'exceedsBalance'});
+    }
+
+    final created = RentPayment(
+      id: 'pay-${_nextId++}',
+      chargeId: charge.id,
+      amount: payment.amount,
+      paidOn: payment.paidOn,
+      method: payment.method,
+      reference: payment.reference.trim().isEmpty
+          ? null
+          : payment.reference.trim(),
+      recordedBy: lease.agentId ?? '',
+      createdAt: DateTime.now(),
+    );
+    _replace(
+      lease.id,
+      (l) => l.copyWith(
+        charges: [
+          for (final c in l.charges)
+            if (c.id == charge.id)
+              c.copyWith(payments: [...c.payments, created])
+            else
+              c,
+        ],
+      ),
+    );
+    return created;
+  }
+
+  @override
+  Future<RentPayment> voidPayment(String paymentId, String reason) async {
+    for (final lease in _leases.values) {
+      for (final charge in lease.charges) {
+        final match = charge.payments
+            .where((p) => p.id == paymentId)
+            .firstOrNull;
+        if (match == null) continue;
+        if (match.isVoid) throw const ConflictFailure();
+
+        final voided = match.copyWith(
+          voidedAt: DateTime.now(),
+          voidReason: reason,
+        );
+        _replace(
+          lease.id,
+          (l) => l.copyWith(
+            charges: [
+              for (final c in l.charges)
+                if (c.id == charge.id)
+                  c.copyWith(
+                    payments: [
+                      for (final p in c.payments)
+                        if (p.id == paymentId) voided else p,
+                    ],
+                  )
+                else
+                  c,
+            ],
+          ),
+        );
+        return voided;
+      }
+    }
+    throw const NotFoundFailure();
+  }
+
+  @override
+  Future<Lease> endLease(String leaseId, DateTime endOn) async {
+    final lease = _require(leaseId);
+    if (!lease.isActive) throw const ConflictFailure();
+
+    final cancelIds = {
+      for (final c in LeaseEnding.chargesToCancel(lease, endOn)) c.id,
+    };
+    return _replace(
+      leaseId,
+      (l) => l.copyWith(
+        status: LeaseStatus.ended,
+        endedOn: endOn,
+        charges: [
+          for (final c in l.charges)
+            if (cancelIds.contains(c.id))
+              c.copyWith(cancelledAt: DateTime.now())
+            else
+              c,
+        ],
+      ),
+    );
   }
 }

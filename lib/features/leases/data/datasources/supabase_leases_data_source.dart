@@ -6,6 +6,8 @@ import 'package:property_manager/features/leases/data/lease_json.dart';
 import 'package:property_manager/features/leases/domain/entities/leasable_property.dart';
 import 'package:property_manager/features/leases/domain/entities/lease.dart';
 import 'package:property_manager/features/leases/domain/entities/new_lease.dart';
+import 'package:property_manager/features/leases/domain/entities/new_payment.dart';
+import 'package:property_manager/features/leases/domain/entities/rent_payment.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final class SupabaseLeasesDataSource implements LeasesDataSource {
@@ -124,4 +126,63 @@ final class SupabaseLeasesDataSource implements LeasesDataSource {
     );
     return await getById(id as String);
   });
+
+  Future<String> _currencyOfCharge(String chargeId) async {
+    final row = await _client
+        .from('rent_charges')
+        .select('leases(currency)')
+        .eq('id', chargeId)
+        .single();
+    final lease = row['leases'];
+    return lease is Map<String, dynamic>
+        ? lease['currency'] as String? ?? 'PKR'
+        : 'PKR';
+  }
+
+  @override
+  Future<RentPayment> recordPayment(NewPayment payment) =>
+      supabaseGuard(() async {
+        final reference = payment.reference.trim();
+        final row = await _client
+            .from('rent_payments')
+            .insert({
+              'charge_id': payment.chargeId,
+              'amount': payment.amount.toDecimalString(),
+              'paid_on': Calendar.formatIso(payment.paidOn),
+              'method': payment.method.wireName,
+              if (reference.isNotEmpty) 'reference': reference,
+              // The trigger overwrites this with the signed-in user, but the
+              // column is required and the RLS check compares it.
+              'recorded_by': _client.auth.currentUser!.id,
+            })
+            .select()
+            .single();
+        return paymentFromJson(row, payment.amount.currency);
+      });
+
+  @override
+  Future<RentPayment> voidPayment(String paymentId, String reason) =>
+      supabaseGuard(() async {
+        final row = await _client
+            .from('rent_payments')
+            .update({
+              'void_reason': reason,
+              'voided_at': DateTime.now().toUtc().toIso8601String(),
+            })
+            .eq('id', paymentId)
+            .select()
+            .single();
+        final currency = await _currencyOfCharge(row['charge_id'] as String);
+        return paymentFromJson(row, currency);
+      });
+
+  @override
+  Future<Lease> endLease(String leaseId, DateTime endOn) =>
+      supabaseGuard(() async {
+        await _client.rpc<dynamic>(
+          'end_lease',
+          params: {'p_lease': leaseId, 'p_on': Calendar.formatIso(endOn)},
+        );
+        return await getById(leaseId);
+      });
 }

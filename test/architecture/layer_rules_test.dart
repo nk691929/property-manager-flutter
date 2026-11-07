@@ -53,4 +53,20 @@ void main() {
     ];
     expect(offenders, isEmpty);
   });
+
+  test('pure-Dart core folders never import Flutter', () {
+    const pureFolders = [
+      'lib/core/money',
+      'lib/core/time',
+      'lib/core/result',
+      'lib/core/error',
+    ];
+    final offenders = [
+      for (final folder in pureFolders)
+        for (final (path, source) in _sources(folder))
+          for (final line in _imports(source))
+            if (line.contains('package:flutter/')) '$path: ${line.trim()}',
+    ];
+    expect(offenders, isEmpty);
+  });
 }
